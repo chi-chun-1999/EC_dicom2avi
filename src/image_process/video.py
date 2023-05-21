@@ -22,3 +22,28 @@ def array2avi(array_data: np.ndarray, video_name:str,fps:int, fourcc='MJPG'):
             out.write(frame_pixels)
 
         out.release()
+
+def avi2array(file_name:str)->np.ndarray:
+
+    cap = cv.VideoCapture(file_name)
+
+    frameCount = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
+    #frameWidth = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+    #frameHeight = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+
+    #print(frameCount,frameWidth,frameHeight)
+
+    video_array =  None
+
+    for i in range(frameCount):
+        ind, frame = cap.read()
+        tmp_frame = np.expand_dims(frame,axis=0)
+        if i == 0:
+            video_array = tmp_frame
+        else:
+            video_array = np.vstack([video_array,tmp_frame])
+
+
+    #print(video_array.shape)
+    return video_array
+    
