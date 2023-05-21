@@ -9,18 +9,16 @@ def array2avi(array_data: np.ndarray, video_name:str,fps:int, fourcc='MJPG'):
     fps:        the fps of avi file
     """
     if len(array_data.shape)!=4:
-        return
+        raise ValueError('The shape of array data not match')
     elif np.max(array_data)>255:
-        print('The max vale in arry data larger than 255.')
+        raise ValueError('The max value in arry data larger than 255.')
         return
     else:
         (framenum, height, width, channel) = array_data.shape
         fourcc = cv.VideoWriter_fourcc(*fourcc)
         out = cv.VideoWriter(video_name,fourcc,fps,(width,height),True)
 
-#
         for frame_pixels in array_data:
-#
             out.write(frame_pixels)
-#
+
         out.release()

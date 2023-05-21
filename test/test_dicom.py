@@ -40,4 +40,5 @@ plt.imshow(dcm_rgb_array[0])
 ### 釋放影片寫入器
 #out.release()
 
-array2avi(dcm_rgb_array[:,:,:,::-1],video_name,fps)
+#array2avi(dcm_rgb_array[:,:,:,::-1],video_name,fps)
+array2avi(dcm_rgb_array[1,:,:,::-1],video_name,fps)
