@@ -23,7 +23,7 @@ ecg_roi =getECGRoi_FixSize(video_array)
 
 tmp = ecg_roi[40].copy()
 
-slide_match_extractor = SlideMatchExtractor()
+slide_match_extractor = YellowLineSlideMatchExtractor()
 
 yellow_line_mask = slide_match_extractor.process(tmp)
 

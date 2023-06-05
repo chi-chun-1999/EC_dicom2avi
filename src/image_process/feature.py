@@ -101,7 +101,7 @@ class YellowLineExtractor(FeatureExtractor):
             
 
 
-class SlideMatchExtractor(FeatureExtractor):
+class YellowLineSlideMatchExtractor(FeatureExtractor):
     def __init__(self,denoise_thres=3,lower_bgr=None ,upper_bgr=None):
         self._denoise_thres = denoise_thres
         
@@ -153,3 +153,74 @@ class SlideMatchExtractor(FeatureExtractor):
 
 
         return yellow_line_mask
+
+
+class CycleExtractor(FeatureExtractor):
+    def __init__(self,red_feature_extractor=None,yellow_feature_extractor=None):
+        
+        if red_feature_extractor == None:
+            self._red_feature_extractor = RedExtractor()
+        else:
+            self._red_feature_extractor = red_feature_extractor
+
+        if yellow_feature_extractor == None:
+            self._yellow_feature_extractor = YellowLineSlideMatchExtractor()
+
+        else:
+            self._yellow_feature_extractor =  yellow_feature_extractor
+        
+    def process(self, extract_data):
+        '''
+        Given a 4-dimensional video array, this function extracts a cycle of heart Echocardiography data from the extract_data.
+        
+        extract_data: The 4-dim numpy array echo data.
+        
+        return:
+        extract_data[cycle_start:cycle_end]: a cycle of heart Echocardiography data.
+        
+        '''
+
+        self.__extract_data = extract_data
+        
+        red_mask = self._red_feature_extractor.process(self.__extract_data)
+
+        yellow_line_mask = self._yellow_feature_extractor.process(self.__extract_data[0])
+        yellow_line_argwhere = np.argwhere(yellow_line_mask[-2])
+
+        red_argwhere = np.argwhere(red_mask)
+
+        match_first_line = red_argwhere[red_argwhere[:,2]==yellow_line_argwhere[0,0]]
+        match_second_line = red_argwhere[red_argwhere[:,2]==yellow_line_argwhere[1,0]]
+
+        bias = 0
+        while(match_first_line.size==0):
+
+            bias+=1
+
+            match_first_line = red_argwhere[red_argwhere[:,2]==yellow_line_argwhere[0,0]-bias]
+            if match_first_line.size!=0:
+                break
+            match_first_line = red_argwhere[red_argwhere[:,2]==yellow_line_argwhere[0,0]+bias]
+            
+        bias = 0
+        while(match_second_line.size==0):
+
+            bias+=1
+
+            match_second_line = red_argwhere[red_argwhere[:,2]==yellow_line_argwhere[1,0]-bias]
+            if match_second_line.size!=0:
+                break
+            match_second_line = red_argwhere[red_argwhere[:,2]==yellow_line_argwhere[1,0]+bias]
+
+        #print(match_first_line)
+        #print(match_second_line)
+
+        #print(yellow_line_argwhere[0,0])
+        #print(yellow_line_argwhere[1,0])
+            
+
+        cycle_start = match_first_line[0,0]
+        cycle_end = match_second_line[0,0]
+        print(cycle_start)
+        print(cycle_end)
+        return (cycle_start,cycle_end)
