@@ -52,5 +52,20 @@ def getECGRoi_FixSize(image:np.ndarray,roi_loaction=None):
     
     return ecg_roi
     
-def getRedFeature(image):
-    a = 0
+def denoiseEco(image,denoise_thres=3):
+    '''
+    denoise the Echocardiography data from image
+
+    image: 3 dimesion image
+
+    return:
+    denoise_image: the image after denoise
+    
+    '''
+
+    denoise_image = image.copy()
+    denoise_image[denoise_image.std(axis=2)<denoise_thres]= np.array([0,0,0])
+    
+    return denoise_image
+
+    
