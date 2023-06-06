@@ -155,7 +155,7 @@ class YellowLineSlideMatchExtractor(FeatureExtractor):
         return yellow_line_mask
 
 
-class CycleExtractor(FeatureExtractor):
+class RRIntervalExtractor(FeatureExtractor):
     def __init__(self,red_feature_extractor=None,yellow_feature_extractor=None):
         
         if red_feature_extractor == None:
@@ -221,6 +221,6 @@ class CycleExtractor(FeatureExtractor):
 
         cycle_start = match_first_line[0,0]
         cycle_end = match_second_line[0,0]
-        print(cycle_start)
-        print(cycle_end)
+        #print(cycle_start)
+        #print(cycle_end)
         return (cycle_start,cycle_end)

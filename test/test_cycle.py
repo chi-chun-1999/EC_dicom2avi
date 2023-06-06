@@ -11,7 +11,7 @@ import cv2 as cv
 import numpy as np
 import math
 
-file_name = '../data_video/KBIHSQO2.avi'
+file_name = '../data_video/KBIHSS90.avi'
 
 video_array = avi2array(file_name)
 print(video_array.shape)
@@ -22,12 +22,20 @@ print(video_array.shape)
 
 
 ecg_roi =getECGRoi_FixSize(video_array) 
-red_extractor = RedExtractor()
 
-cycle_extractor = CycleExtractor()
-cycle_start, cycle_end = cycle_extractor.process(ecg_roi)
+rr_interval_extractor = RRIntervalExtractor()
+rr_start, rr_end = rr_interval_extractor.process(ecg_roi)
 
-matplot_show_video(video_array[cycle_start:cycle_end])
+cycle_start = rr_start - int((rr_end-rr_start)/3)
+cycle_end = rr_end - int((rr_end-rr_start)/3)
+
+#matplot_show_video(video_array[cycle_start:cycle_end])
+
+cycyle_file_name = '../data_video/KBIHSS90_cycle.avi'
+array2avi(video_array[cycle_start:cycle_end],cycyle_file_name,30)
+
+
+
 
 #red_mask = red_extractor.process(ecg_roi)
 
