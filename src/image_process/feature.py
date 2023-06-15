@@ -297,11 +297,110 @@ class RRIntervalExtractor(FeatureExtractor):
 
 class RWaveExtractor_Cluster(FeatureExtractor):
     def __init__(self,template_width = 40,denoise_thres = 5,gmm_scale = 35,match_candidate=15):
+
         self._template_width = template_width
         self._denoise_thres = denoise_thres
         self._gmm_scale = gmm_scale
         self._match_candidate = match_candidate
 
+    def _get_ecg_info(self):
+        gree_ecg_extractor = GreenECGExtractor(denoise_thres=self._denoise_thres)
+
+        self._green_ecg_mask = gree_ecg_extractor.process(self.__extract_data)
+
+        self._ecg_location = np.argwhere(self._green_ecg_mask)
+        self._ecg_mean = np.argwhere(self._green_ecg_mask).mean(axis=0)
+        self._ecg_y_range_upper_bound = np.ceil(np.abs(self._ecg_location-self._ecg_mean).max(axis=0)[0])
+        self._ecg_y_range_upper_bound = self._ecg_y_range_upper_bound.astype(int)
+#print(ecg_y_range_upper_bound)
+        self._ecg_y_axis_center = self._ecg_mean.astype(int)[0]
+    
+    def _get_two_yello_line_location(self):
+
+
+        yellow_line_extractor = YellowLineSlideMatchExtractor()
+        yellow_line_extractor.process(self.__extract_data)
+        #yellow_line_mask = yellow_line_extractor.process(extract_data)
+        #plt.figure()
+        #plt.imshow(yellow_line_mask)
+        self._first_line,self._second_line  = yellow_line_extractor.getTwoLineLocation()
+        
+         
+    def _generate_template_mask(self):
+
+        self._template_mask = self._green_ecg_mask[self._ecg_y_axis_center-self._ecg_y_range_upper_bound:self._ecg_y_axis_center+self._ecg_y_range_upper_bound,self._first_line+1:self._first_line+self._template_width]
+        
+        return self._template_mask
+
+    def _generate_gmm(self):
+
+# the GMM of R location accroding to RR interval
+        ecg_location_x_max = np.max(self._ecg_location[:,1])
+        ecg_location_x_min = np.min(self._ecg_location[:,1])
+
+        image_rr_interval_dist = self._second_line-self._first_line
+
+        self._R_dist_probability = np.zeros((self._green_ecg_mask.shape[1],2))
+        self._R_dist_probability[:,0] = np.arange(0,self._green_ecg_mask.shape[1])
+
+
+        probability_center_list = []
+        current_location = self._first_line
+        probability_center_list.append(current_location)
+
+        while current_location>=ecg_location_x_min:
+            current_location-=image_rr_interval_dist
+            probability_center_list.append(current_location)
+
+
+        current_location = self._second_line
+        probability_center_list.append(current_location)
+        
+        while current_location<=ecg_location_x_max:
+            current_location+=image_rr_interval_dist
+            probability_center_list.append(current_location)
+            
+
+        for i in probability_center_list:
+            self._R_dist_probability[:,1]+=norm.pdf(self._R_dist_probability[:,0],loc=i,scale=self._gmm_scale)
+
+        self._R_dist_probability[0:ecg_location_x_min,1]=0
+        self._R_dist_probability[ecg_location_x_max:,1]=0
+        #plt.figure()
+        #plt.plot(R_dist_probability[:,0],R_dist_probability[:,1])
+        #plt.show()
+        
+        return self._R_dist_probability
+        
+    def _template_match(self,template_mask=None):
+# Using the OpenCV template match to find the match place.
+
+        if type(template_mask)==np.ndarray:
+            self._template_mask = template_mask
+            
+
+        w,h = self._template_mask.shape[::-1]
+        #threshold = 0.7
+        self._match = cv.matchTemplate(self._green_ecg_mask,self._template_mask,cv.TM_CCORR_NORMED)
+        #loc = np.where( match >= threshold)
+        return self._match
+        
+    def _combine_match_mat_and_R_dist_prob(self,match=None,R_dist_prob = None):
+# Combine R_dist_probability and match matrix
+
+        if type(match)==np.ndarray:
+            self._match = match
+        if type(R_dist_prob)==np.ndarray:
+            self._R_dist_probability = R_dist_prob
+
+
+        template_match_mask = np.zeros(self._green_ecg_mask.shape)
+        template_match_mask[0:self._match.shape[0],0:self._match.shape[1]] = self._match
+
+        self._combine_mask = template_match_mask*self._R_dist_probability.T[1:2,:]
+        
+        return self._combine_mask
+        
     
     def process(self, extract_data):
         """
@@ -313,89 +412,26 @@ class RWaveExtractor_Cluster(FeatureExtractor):
         output:
         the location of R wave
         """
-        gree_ecg_extractor = GreenECGExtractor(denoise_thres=self._denoise_thres)
-
-        green_ecg_mask = gree_ecg_extractor.process(extract_data)
         
-        ecg_location = np.argwhere(green_ecg_mask)
-        ecg_mean = np.argwhere(green_ecg_mask).mean(axis=0)
-        ecg_y_range_upper_bound = np.ceil(np.abs(ecg_location-ecg_mean).max(axis=0)[0])
-        ecg_y_range_upper_bound = ecg_y_range_upper_bound.astype(int)
-#print(ecg_y_range_upper_bound)
-        ecg_y_axis_center = ecg_mean.astype(int)[0]
-
-
-
-
-        yellow_line_extractor = YellowLineSlideMatchExtractor()
-        yellow_line_extractor.process(extract_data)
-        #yellow_line_mask = yellow_line_extractor.process(extract_data)
-        #plt.figure()
-        #plt.imshow(yellow_line_mask)
-        first_line,second_line  = yellow_line_extractor.getTwoLineLocation()
-                
         
-        template_mask = green_ecg_mask[ecg_y_axis_center-ecg_y_range_upper_bound:ecg_y_axis_center+ecg_y_range_upper_bound,first_line+1:first_line+self._template_width]
+        self.__extract_data = extract_data
 
-# Using the OpenCV template match to find the match place.
+        self._get_ecg_info()
 
-        w,h = template_mask.shape[::-1]
-        #threshold = 0.7
-        match = cv.matchTemplate(green_ecg_mask,template_mask,cv.TM_CCORR_NORMED)
-        #loc = np.where( match >= threshold)
-
-# the GMM of R location accroding to RR interval
-
-
-        ecg_location_x_max = np.max(ecg_location[:,1])
-        ecg_location_x_min = np.min(ecg_location[:,1])
-
-        image_rr_interval_dist = second_line-first_line
-
-        R_dist_probability = np.zeros((green_ecg_mask.shape[1],2))
-        R_dist_probability[:,0] = np.arange(0,green_ecg_mask.shape[1])
-
-
-        probability_center_list = []
-        current_location = first_line
-        probability_center_list.append(current_location)
-
-        while current_location>=ecg_location_x_min:
-            current_location-=image_rr_interval_dist
-            probability_center_list.append(current_location)
-
-
-        current_location = second_line
-        probability_center_list.append(current_location)
+        self._get_two_yello_line_location()
         
-        while current_location<=ecg_location_x_max:
-            current_location+=image_rr_interval_dist
-            probability_center_list.append(current_location)
-            
-
-        for i in probability_center_list:
-            #print(i-int(image_rr_interval_dist/2))
-            #R_dist_probability[i-int(image_rr_interval_dist/2):i+int(image_rr_interval_dist/2),1] = y
-            R_dist_probability[:,1]+=norm.pdf(R_dist_probability[:,0],loc=i,scale=self._gmm_scale)
-
-        R_dist_probability[0:ecg_location_x_min,1]=0
-        R_dist_probability[ecg_location_x_max:,1]=0
+        template_mask = self._generate_template_mask()
         
-        #plt.figure()
-        #plt.plot(R_dist_probability[:,0],R_dist_probability[:,1])
-        #plt.show()
+        match = self._template_match(template_mask)
         
-# Combine R_dist_probability and match matrix
+        R_dist_prob = self._generate_gmm()
+        
+        combine_mask = self._combine_match_mat_and_R_dist_prob(match=match,R_dist_prob=R_dist_prob)
 
-
-        template_match_mask = np.zeros(green_ecg_mask.shape)
-        template_match_mask[0:match.shape[0],0:match.shape[1]] = match
-
-        self._combine_mask = template_match_mask*R_dist_probability.T[1:2,:]
        
 ## getorder and R wave location in x axis
 
-        ind = np.unravel_index(np.argsort(self._combine_mask, axis=None), self._combine_mask.shape)
+        ind = np.unravel_index(np.argsort(combine_mask, axis=None), combine_mask.shape)
 #print(ind[0][-15::],ind[1][-15::])
 #print(combine_mask[ind])
 ##
@@ -403,7 +439,7 @@ class RWaveExtractor_Cluster(FeatureExtractor):
         r_wave_x_location = []
 
 
-        new_ind_x = np.append(ind[1],[second_line+1])
+        new_ind_x = np.append(ind[1],[self._second_line+1])
         new_ind_y = np.append(ind[0],ind[0][-1])
         X = new_ind_x[np.arange(-1,-16,-1)].reshape((-1,1))
         clustering = DBSCAN(eps=3, min_samples=2).fit(X)

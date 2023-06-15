@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from typing import Type
 #from image_process import *
 
-from show.matplot_show import matplot_show_video,show_R_wave_place
+from src.show.matplot_show import matplot_show_video,show_R_wave_place
 from scipy.stats import norm
 from sklearn.cluster import DBSCAN
 import glob
