@@ -4,7 +4,7 @@ import abc
 import matplotlib.pyplot as plt
 from .frame import denoiseEco
 import math
-from scipy.stats import norm
+from scipy.stats import norm 
 from sklearn.cluster import DBSCAN
 
 
@@ -306,7 +306,7 @@ class RWaveExtractor_Cluster(FeatureExtractor):
     def _get_ecg_info(self):
         gree_ecg_extractor = GreenECGExtractor(denoise_thres=self._denoise_thres)
 
-        self._green_ecg_mask = gree_ecg_extractor.process(self.__extract_data)
+        self._green_ecg_mask = gree_ecg_extractor.process(self._extract_data)
 
         self._ecg_location = np.argwhere(self._green_ecg_mask)
         self._ecg_mean = np.argwhere(self._green_ecg_mask).mean(axis=0)
@@ -319,7 +319,7 @@ class RWaveExtractor_Cluster(FeatureExtractor):
 
 
         yellow_line_extractor = YellowLineSlideMatchExtractor()
-        yellow_line_extractor.process(self.__extract_data)
+        yellow_line_extractor.process(self._extract_data)
         #yellow_line_mask = yellow_line_extractor.process(extract_data)
         #plt.figure()
         #plt.imshow(yellow_line_mask)
@@ -344,24 +344,24 @@ class RWaveExtractor_Cluster(FeatureExtractor):
         self._R_dist_probability[:,0] = np.arange(0,self._green_ecg_mask.shape[1])
 
 
-        probability_center_list = []
+        self._probability_center_list = []
         current_location = self._first_line
-        probability_center_list.append(current_location)
+        self._probability_center_list.append(current_location)
 
         while current_location>=ecg_location_x_min:
             current_location-=image_rr_interval_dist
-            probability_center_list.append(current_location)
+            self._probability_center_list.append(current_location)
 
 
         current_location = self._second_line
-        probability_center_list.append(current_location)
+        self._probability_center_list.append(current_location)
         
         while current_location<=ecg_location_x_max:
             current_location+=image_rr_interval_dist
-            probability_center_list.append(current_location)
+            self._probability_center_list.append(current_location)
             
 
-        for i in probability_center_list:
+        for i in self._probability_center_list:
             self._R_dist_probability[:,1]+=norm.pdf(self._R_dist_probability[:,0],loc=i,scale=self._gmm_scale)
 
         self._R_dist_probability[0:ecg_location_x_min,1]=0
@@ -414,7 +414,7 @@ class RWaveExtractor_Cluster(FeatureExtractor):
         """
         
         
-        self.__extract_data = extract_data
+        self._extract_data = extract_data
 
         self._get_ecg_info()
 
@@ -451,3 +451,90 @@ class RWaveExtractor_Cluster(FeatureExtractor):
             r_wave_x_location.append((new_ind_x[-1-index]-1,new_ind_y[-1-index]))
             
         return r_wave_x_location
+
+class RWaveExtractor_IntervalMax(RWaveExtractor_Cluster):
+    def __init__(self, template_width=40, denoise_thres=5, gmm_scale=35):
+        
+        self._template_width = template_width
+        self._denoise_thres = denoise_thres
+        self._gmm_scale = gmm_scale
+    
+    def process(self, extract_data):
+        """
+        input the 4 dimesion of ecg roi array, this function will output the location of R wave
+        
+        input:
+        extract_data: the 4 dimesion of ecg roi array
+        
+        output:
+        the location of R wave
+        """
+        
+        
+        self._extract_data = extract_data
+
+        self._get_ecg_info()
+
+        self._get_two_yello_line_location()
+        
+        template_mask = self._generate_template_mask()
+        
+        match = self._template_match(template_mask)
+        
+        R_dist_prob = self._generate_gmm()
+        
+        combine_mask = self._combine_match_mat_and_R_dist_prob(match=match,R_dist_prob=R_dist_prob)
+ 
+
+        rr_interval_dist = self._second_line-self._first_line
+
+        self._probability_center_list.sort()
+
+        r_wave_location_dict = {}
+
+
+        for i in self._probability_center_list:
+            
+            if i <0:
+                i = 0
+            if i>self._first_line:
+                break
+            dectect_roi_y_start = self._ecg_y_axis_center-self._ecg_y_range_upper_bound
+            dectect_roi_y_end = self._ecg_y_axis_center+self._ecg_y_range_upper_bound
+
+            dectect_roi_x_start = i-int(rr_interval_dist/2)
+            dectect_roi_x_end = i+int(rr_interval_dist/2)
+
+            if dectect_roi_x_start<0:
+                dectect_roi_x_start = 0
+
+            if dectect_roi_x_end>combine_mask.shape[1]:
+                dectect_roi_x_end = combine_mask.shape[1]
+
+
+            detect_interval = combine_mask[dectect_roi_y_start:dectect_roi_y_end,dectect_roi_x_start:dectect_roi_x_end]
+            
+            argmax_detect_interval = np.unravel_index(np.argmax(detect_interval),detect_interval.shape)
+
+            if detect_interval[argmax_detect_interval]>=0.01:
+                
+                tmp_r_wave_x_loaction = dectect_roi_x_start + argmax_detect_interval[1]
+                tmp_r_wave_y_loaction = dectect_roi_y_start + argmax_detect_interval[0]
+
+                #print('-->',tmp_r_wave_x_loaction)
+                #print('-->',tmp_r_wave_y_loaction)
+                r_wave_location_dict[tmp_r_wave_x_loaction]=tmp_r_wave_y_loaction
+
+            #plt.figure()
+            #plt.imshow(detect_interval)
+            #plt.show()
+
+        r_wave_location_dict[self._second_line] = list(r_wave_location_dict.values())[-1]
+
+#print(r_wave_x_loactions)
+        print(r_wave_location_dict)
+
+        r_wave_location = [(k,v) for k,v in r_wave_location_dict.items()]
+        
+        
+        return r_wave_location

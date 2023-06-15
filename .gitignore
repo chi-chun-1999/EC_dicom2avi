@@ -5,6 +5,7 @@
 *.avi
 *.npy
 *.mp4
+.tags
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
