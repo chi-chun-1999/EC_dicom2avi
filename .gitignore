@@ -3,6 +3,8 @@
 
 ### Data
 *.avi
+*.npy
+*.mp4
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

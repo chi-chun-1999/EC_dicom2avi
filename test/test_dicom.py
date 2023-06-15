@@ -4,24 +4,34 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 import pydicom
 import cv2 as cv
 import numpy as np
-import SimpleITK as sitk
+#import SimpleITK as sitk
 import matplotlib.pyplot as plt
 from typing import Type
 from image_process import getRgbArray
-from image_process import array2avi
+from image_process import array2avi,avi2array
 
-
-data_path = '../../dataset/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSQ00'
-video_name = 'test3.avi'
+data_path = '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSR0C'
+video_name = './testmp4.mp4'
 fps = 30
 
 dcm = pydicom.dcmread(data_path)
+#video_array = avi2array(video_name)
+#npy_array = np.load('./test.npz.npy')
+
+#video_array_rgb = cv.cvtColor(video_array[0],cv.COLOR_BGR2RGB)
 
 
 dcm_rgb_array =  getRgbArray(dcm)
-print(dcm_rgb_array.shape)
-plt.imshow(dcm_rgb_array[0])
 
+
+print(dcm_rgb_array.shape)
+plt.figure()
+plt.imshow(dcm_rgb_array[0])
+#plt.figure()
+#plt.imshow(video_array_rgb)
+#plt.figure()
+#plt.imshow(npy_array[0])
+plt.show()
 
 #(framenum, height, width, channel) = dcm_rgb_array.shape
 #
@@ -40,5 +50,6 @@ plt.imshow(dcm_rgb_array[0])
 ### 釋放影片寫入器
 #out.release()
 
-#array2avi(dcm_rgb_array[:,:,:,::-1],video_name,fps)
-array2avi(dcm_rgb_array[1,:,:,::-1],video_name,fps)
+#mp4_video_name = 'testmp4.mp4'
+#array2avi(dcm_rgb_array[:,:,:,::-1],mp4_video_name,fps,fourcc='mp4v')
+#array2avi(dcm_rgb_array[1,:,:,::-1],video_name,fps)

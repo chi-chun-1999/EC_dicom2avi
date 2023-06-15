@@ -60,8 +60,11 @@ def main(file_path,output,fps,fourcc):
         rr_interval_extractor = RRIntervalExtractor()
         rr_start, rr_end = rr_interval_extractor.process(ecg_roi)
 
-        cycle_start = rr_start - int((rr_end-rr_start)/3)
-        cycle_end = rr_end - int((rr_end-rr_start)/3)
+        #cycle_start = rr_start - int((rr_end-rr_start)/3)
+        #cycle_end = rr_end - int((rr_end-rr_start)/3)
+
+        cycle_start = rr_start
+        cycle_end = rr_end 
 
         array2avi(video_array[cycle_start:cycle_end],output_file[i],fps,fourcc)
 

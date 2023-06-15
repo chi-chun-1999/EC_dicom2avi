@@ -46,4 +46,3 @@ def avi2array(file_name:str)->np.ndarray:
 
     #print(video_array.shape)
     return video_array
-    

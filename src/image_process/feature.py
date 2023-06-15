@@ -4,6 +4,9 @@ import abc
 import matplotlib.pyplot as plt
 from .frame import denoiseEco
 import math
+from scipy.stats import norm
+from sklearn.cluster import DBSCAN
+
 
 class FeatureExtractor(abc.ABC):
     def __init__(self):
@@ -18,11 +21,26 @@ class RedExtractor(FeatureExtractor):
     def __init__(self,lower_bgr=None ,upper_bgr=None):
         if lower_bgr==None:
             self._lower_bgr =np.array([50,50,120])
+        else:
+            self._lower_bgr = lower_bgr
         if upper_bgr==None:
             self._upper_bgr = np.array([110,110,225])
+        else:
+            self._upper_bgr = upper_bgr
     
     
     def process(self,extract_data):
+        """
+        Given the 4-dimensional video data, this function utilizes the COLOR feature to filter the region of interest (ROI) based on the color red.
+
+        input:
+        extract_data: the 4-dim roi of ecg video data.
+        
+        return:
+        self.__return_data: the 4-dim mask of ROI based on the color red.
+
+
+        """
         self.__extract_data = extract_data
         
         extract_data_shape = self.__extract_data.shape
@@ -43,6 +61,42 @@ class RedExtractor(FeatureExtractor):
             #self.__return_data[i] = cv.bitwise_and(tmp_rgb,tmp_rgb,mask=or_mask)
         
         return self.__return_data
+
+class GreenECGExtractor(FeatureExtractor):
+    def __init__(self,denoise_thres=3,lower_bgr=None,upper_bgr=None):
+        self.__denoise_thres = denoise_thres
+        if lower_bgr==None:
+            self._lower_bgr =np.array([120,130,0])
+        else:
+            self._lower_bgr = lower_bgr
+        if upper_bgr==None:
+            self._upper_bgr = np.array([190,190,100])
+        else:
+            self._upper_bgr = upper_bgr
+        
+        
+    def process(self, extract_data):
+        first_frame = extract_data[0].copy()
+        final_frame = extract_data[-1].copy()
+        denoise_first_frame = denoiseEco(first_frame,self.__denoise_thres)
+        denoise_final_frame = denoiseEco(final_frame,self.__denoise_thres)
+
+        first_mask = cv.inRange(denoise_first_frame,self._lower_bgr,self._upper_bgr)
+        final_mask = cv.inRange(denoise_final_frame,self._lower_bgr,self._upper_bgr)
+        ecg_mask = cv.bitwise_or(first_mask,final_mask)
+        
+        #plt.figure()
+        #plt.imshow(denoise_first_frame)
+        #plt.figure()
+        #plt.imshow(first_mask)
+        #plt.figure()
+        #plt.imshow(final_mask)
+        #plt.figure()
+        #plt.imshow(ecg_mask)
+        #plt.show()
+        return ecg_mask
+        
+        
 
 
 class YellowLineExtractor(FeatureExtractor):
@@ -111,7 +165,10 @@ class YellowLineSlideMatchExtractor(FeatureExtractor):
             self._upper_bgr = np.array([150,200,180])
             
     def process(self,extractor_data):
+        """
+        Find only the location of two yellow lines in the image.
         
+        """
 
         self.__extractor_data = extractor_data
 
@@ -141,19 +198,30 @@ class YellowLineSlideMatchExtractor(FeatureExtractor):
         score = (outcome.sum(axis=2)).sum(axis=2)
         yello_location = np.unravel_index(score.argmax(), score.shape)
 
-        first_line = np.unravel_index(score.argsort()[0,-1],score.shape)
-        second_line = np.unravel_index(score.argsort()[0,-2],score.shape)
+        # Because the the size of kernel is 84x3, the actual location of line must add 1 
+
+        self._first_line = list(np.unravel_index(score.argsort()[0,-1],score.shape))
+        self._first_line[1]+=1         # Because the the size of kernel is 84x3, the actual location of line must add 1
+
+        self._second_line =list(np.unravel_index(score.argsort()[0,-2],score.shape))
+        self._second_line[1]+=1         # Because the the size of kernel is 84x3, the actual location of line must add 1
 
         yellow_line_mask = np.zeros(mask.shape,np.uint8)
         #print(first_line[1])
         #print(second_line[1])
         #print(yellow_line_mask.shape)
-        yellow_line_mask[-52:-1,first_line[1]]=255
-        yellow_line_mask[-52:-1,second_line[1]]=255
+        yellow_line_mask[-52:-1,self._first_line[1]]=255
+        yellow_line_mask[-52:-1,self._second_line[1]]=255
 
 
         return yellow_line_mask
 
+    def getTwoLineLocation(self):
+        
+        if self._first_line[1]<self._second_line[1]:
+            return self._first_line[1],self._second_line[1]
+        else:
+            return self._second_line[1],self._first_line[1]
 
 class RRIntervalExtractor(FeatureExtractor):
     def __init__(self,red_feature_extractor=None,yellow_feature_extractor=None):
@@ -173,6 +241,7 @@ class RRIntervalExtractor(FeatureExtractor):
         '''
         Given a 4-dimensional video array, this function extracts a cycle of heart Echocardiography data from the extract_data.
         
+        input:
         extract_data: The 4-dim numpy array echo data.
         
         return:
@@ -224,3 +293,125 @@ class RRIntervalExtractor(FeatureExtractor):
         #print(cycle_start)
         #print(cycle_end)
         return (cycle_start,cycle_end)
+
+
+class RWaveExtractor_Cluster(FeatureExtractor):
+    def __init__(self,template_width = 40,denoise_thres = 5,gmm_scale = 35,match_candidate=15):
+        self._template_width = template_width
+        self._denoise_thres = denoise_thres
+        self._gmm_scale = gmm_scale
+        self._match_candidate = match_candidate
+
+    
+    def process(self, extract_data):
+        """
+        input the 4 dimesion of ecg roi array, this function will output the location of R wave
+        
+        input:
+        extract_data: the 4 dimesion of ecg roi array
+        
+        output:
+        the location of R wave
+        """
+        gree_ecg_extractor = GreenECGExtractor(denoise_thres=self._denoise_thres)
+
+        green_ecg_mask = gree_ecg_extractor.process(extract_data)
+        
+        ecg_location = np.argwhere(green_ecg_mask)
+        ecg_mean = np.argwhere(green_ecg_mask).mean(axis=0)
+        ecg_y_range_upper_bound = np.ceil(np.abs(ecg_location-ecg_mean).max(axis=0)[0])
+        ecg_y_range_upper_bound = ecg_y_range_upper_bound.astype(int)
+#print(ecg_y_range_upper_bound)
+        ecg_y_axis_center = ecg_mean.astype(int)[0]
+
+
+
+
+        yellow_line_extractor = YellowLineSlideMatchExtractor()
+        yellow_line_extractor.process(extract_data)
+        #yellow_line_mask = yellow_line_extractor.process(extract_data)
+        #plt.figure()
+        #plt.imshow(yellow_line_mask)
+        first_line,second_line  = yellow_line_extractor.getTwoLineLocation()
+                
+        
+        template_mask = green_ecg_mask[ecg_y_axis_center-ecg_y_range_upper_bound:ecg_y_axis_center+ecg_y_range_upper_bound,first_line+1:first_line+self._template_width]
+
+# Using the OpenCV template match to find the match place.
+
+        w,h = template_mask.shape[::-1]
+        #threshold = 0.7
+        match = cv.matchTemplate(green_ecg_mask,template_mask,cv.TM_CCORR_NORMED)
+        #loc = np.where( match >= threshold)
+
+# the GMM of R location accroding to RR interval
+
+
+        ecg_location_x_max = np.max(ecg_location[:,1])
+        ecg_location_x_min = np.min(ecg_location[:,1])
+
+        image_rr_interval_dist = second_line-first_line
+
+        R_dist_probability = np.zeros((green_ecg_mask.shape[1],2))
+        R_dist_probability[:,0] = np.arange(0,green_ecg_mask.shape[1])
+
+
+        probability_center_list = []
+        current_location = first_line
+        probability_center_list.append(current_location)
+
+        while current_location>=ecg_location_x_min:
+            current_location-=image_rr_interval_dist
+            probability_center_list.append(current_location)
+
+
+        current_location = second_line
+        probability_center_list.append(current_location)
+        
+        while current_location<=ecg_location_x_max:
+            current_location+=image_rr_interval_dist
+            probability_center_list.append(current_location)
+            
+
+        for i in probability_center_list:
+            #print(i-int(image_rr_interval_dist/2))
+            #R_dist_probability[i-int(image_rr_interval_dist/2):i+int(image_rr_interval_dist/2),1] = y
+            R_dist_probability[:,1]+=norm.pdf(R_dist_probability[:,0],loc=i,scale=self._gmm_scale)
+
+        R_dist_probability[0:ecg_location_x_min,1]=0
+        R_dist_probability[ecg_location_x_max:,1]=0
+        
+        #plt.figure()
+        #plt.plot(R_dist_probability[:,0],R_dist_probability[:,1])
+        #plt.show()
+        
+# Combine R_dist_probability and match matrix
+
+
+        template_match_mask = np.zeros(green_ecg_mask.shape)
+        template_match_mask[0:match.shape[0],0:match.shape[1]] = match
+
+        self._combine_mask = template_match_mask*R_dist_probability.T[1:2,:]
+       
+## getorder and R wave location in x axis
+
+        ind = np.unravel_index(np.argsort(self._combine_mask, axis=None), self._combine_mask.shape)
+#print(ind[0][-15::],ind[1][-15::])
+#print(combine_mask[ind])
+##
+
+        r_wave_x_location = []
+
+
+        new_ind_x = np.append(ind[1],[second_line+1])
+        new_ind_y = np.append(ind[0],ind[0][-1])
+        X = new_ind_x[np.arange(-1,-16,-1)].reshape((-1,1))
+        clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+        labels = clustering.labels_
+        unique_label = np.unique(labels).tolist()
+
+        for i in unique_label:
+            index = np.where(labels==i)[0][0]
+            r_wave_x_location.append((new_ind_x[-1-index]-1,new_ind_y[-1-index]))
+            
+        return r_wave_x_location

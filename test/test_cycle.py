@@ -23,6 +23,8 @@ print(video_array.shape)
 
 ecg_roi =getECGRoi_FixSize(video_array) 
 
+red_extractor = RedExtractor()
+#
 rr_interval_extractor = RRIntervalExtractor()
 rr_start, rr_end = rr_interval_extractor.process(ecg_roi)
 
@@ -38,7 +40,7 @@ array2avi(video_array[cycle_start:cycle_end],cycyle_file_name,30)
 
 
 #red_mask = red_extractor.process(ecg_roi)
-
+#
 #red_frames = np.ones(ecg_roi.shape,dtype=np.uint8)
 #for i in range(ecg_roi.shape[0]):
 #    tmp_rgb=cv.cvtColor(ecg_roi[i],cv.COLOR_BGR2RGB)
