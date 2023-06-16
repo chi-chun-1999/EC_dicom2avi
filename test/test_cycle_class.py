@@ -70,15 +70,17 @@ class TestCycle(TestCase):
 
 
 test_cycle = TestCycle()
-test_cycle.test_file_path()
+#test_cycle.test_file_path()
 #%%
 class TestMultiCycle(TestCase):
     def test_extract_cycle(self):
-        self.extract_multi_cycle = ExtractMulitCycle(files_4d[1])
+        #self.extract_multi_cycle = ExtractMulitCycle(files_4d[1])
+        file_path = '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSR06'
+        self.extract_multi_cycle = ExtractMulitCycle(file_path)
         self.extract_multi_cycle.extractCycle()
         multi_cycle_lists = self.extract_multi_cycle.getCycle()
-        print(len(multi_cycle_lists))
-        print(multi_cycle_lists[0].shape)
+        #print(len(multi_cycle_lists))
+        #print(multi_cycle_lists[0].shape)
         #matplot_show_video(multi_cycle_lists[0])
     def test_export_data(self):
         self.extract_multi_cycle.exportAvi()
@@ -88,5 +90,3 @@ class TestMultiCycle(TestCase):
 test_cycle = TestMultiCycle()
 test_cycle.test_extract_cycle()
 test_cycle.test_export_data()
-
-# %%

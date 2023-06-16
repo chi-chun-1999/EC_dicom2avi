@@ -10,7 +10,7 @@ import re
 
 
 @click.command()
-@click.argument('file_path',nargs=-1,type=click.Path())
+@click.argument('file_path',nargs=-1,type=click.Path(exists=True))
 @click.option('-f','--fps','fps',default=30,help='The fps of avi',type=float,show_default=True)
 @click.option('-o','--output','output',default='output.avi',show_default=True,help='The output name of avi file',type=str)
 @click.option('--fourcc','fourcc',default='MJPG',help='The Fourcc \'MJPG\',\'DIVX\',\'XVID\'',type=str,show_default=True)

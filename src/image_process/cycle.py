@@ -31,7 +31,7 @@ class CycleAbstract(abc.ABC):
     
     def _exportFilePath(self,file_name_extension,idx,export_dir = './'):
         #export_file_path = export_dir+self._file_name+'_'+__class__.__name__+'_'+str(idx)+'.'+file_name_extension
-        export_file_path = "%s%s_%s_%d.%s"%(export_dir,self._file_name,__class__.__name__,idx,file_name_extension)
+        export_file_path = "%s%s_%s_%d.%s"%(export_dir,self._file_name,type(self).__name__,idx,file_name_extension)
         
         return export_file_path
     
@@ -89,9 +89,18 @@ class ExtractMulitCycle(CycleAbstract):
             self._r_wave_extractor = r_wave_extractor
     
     def extractCycle(self):
+
+
         dcm = pydicom.read_file(self._dicom_file_path)
+
+        if dcm.pixel_array.ndim!=4:
+            input_dicom_dim = dcm.pixel_array.ndim
+            error_str = "The dicom file of "+self._file_name+' msut be 4 dimesion array, but getting '+str(input_dicom_dim)+'.'
+            raise ValueError(error_str)
+
         dcm_rgb_array =  getRgbArray(dcm)
         dcm_bgr_array = dcm_rgb_array[:,:,:,::-1]
+        
 
 #plt.imshow(video_array[1,350:,0:318,:])
 
