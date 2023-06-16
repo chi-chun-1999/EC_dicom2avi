@@ -1,0 +1,88 @@
+@startuml
+
+FeatureExtractor <|-- RedExtractor
+FeatureExtractor <|-- GreenECGExtractor
+FeatureExtractor <|-- YellowLineExtractor
+FeatureExtractor <|-- YellowLineSlideMatchExtractor
+FeatureExtractor <|-- RRIntervalExtractor
+FeatureExtractor <|-- RWaveExtractor_Cluster
+
+
+Interface FeatureExtractor{
+   - _extract_data 
+   + process(extract_data):
+}
+
+class RedExtractor{
+   # _lower_bgr
+   # _upper_bgr
+   + process(extract_data):
+}
+note left: Using Color to get RED \nfeature on the image.
+
+class GreenECGExtractor
+{
+   # _lower_bgr
+   # _upper_bgr
+   + process(extract_data):
+}
+note left: Using Color to get ECG line 
+
+class YellowLineExtractor
+{
+   # _denoise_thres
+   # _hough_line_thres
+   # _lower_bgr
+   # _upper_bgr
+   + process(extract_data):
+}
+note left: Using Hough Line to get \ntwo yellow line on the image
+
+class YellowLineSlideMatchExtractor
+{
+   # _denoise_thres
+   # _lower_bgr
+   # _upper_bgr
+   # _first_line
+   # _second_line
+   + process(extract_data):
+   + getTwoLine():[first_line, second_line]
+}
+
+class RRIntervalExtractor
+{
+   # _yellow_feature_extractor
+   # _red_feature_extractor
+   + process(extract_data):
+    
+}
+RRIntervalExtractor *-- RedExtractor
+RRIntervalExtractor *-- YellowLineSlideMatchExtractor
+
+class RWaveExtractor_Cluster
+{
+ # _template_width
+ # _denoise_thres
+ # _gmm_scale
+ # _match_candidate
+ # _green_ecg_mask
+ # _ecg_mean
+ # _ecg_location
+ + process(extract_data):
+ # _get_ecg_info()
+ # _get_two_yello_line_location()
+ # _generate_gmm()
+ # _template_match() 
+ # _combine_match_mat_and_R_dist_prob()
+
+}
+RWaveExtractor_Cluster *-- GreenECGExtractor
+RWaveExtractor_Cluster *-- YellowLineSlideMatchExtractor
+
+class RWaveExtractor_IntervalMax
+{
+ + process(extract_data):
+}
+RWaveExtractor_Cluster<|-- RWaveExtractor_IntervalMax
+
+@enduml

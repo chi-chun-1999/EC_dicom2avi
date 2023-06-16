@@ -453,7 +453,7 @@ class RWaveExtractor_Cluster(FeatureExtractor):
         return r_wave_x_location
 
 class RWaveExtractor_IntervalMax(RWaveExtractor_Cluster):
-    def __init__(self, template_width=40, denoise_thres=5, gmm_scale=35):
+    def __init__(self, template_width=40, denoise_thres=5, gmm_scale=25):
         
         self._template_width = template_width
         self._denoise_thres = denoise_thres
@@ -485,8 +485,9 @@ class RWaveExtractor_IntervalMax(RWaveExtractor_Cluster):
         
         combine_mask = self._combine_match_mat_and_R_dist_prob(match=match,R_dist_prob=R_dist_prob)
  
+        tolerance_pixel = 2
 
-        rr_interval_dist = self._second_line-self._first_line
+        rr_interval_dist = self._second_line-self._first_line+tolerance_pixel
 
         self._probability_center_list.sort()
 
@@ -532,7 +533,7 @@ class RWaveExtractor_IntervalMax(RWaveExtractor_Cluster):
         r_wave_location_dict[self._second_line] = list(r_wave_location_dict.values())[-1]
 
 #print(r_wave_x_loactions)
-        print(r_wave_location_dict)
+        #print(r_wave_location_dict)
 
         r_wave_location = [(k,v) for k,v in r_wave_location_dict.items()]
         
