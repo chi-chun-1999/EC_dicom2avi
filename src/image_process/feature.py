@@ -348,6 +348,7 @@ class RWaveExtractor_Cluster(FeatureExtractor):
         current_location = self._first_line
         self._probability_center_list.append(current_location)
 
+        #plt.figure()
         while current_location>=ecg_location_x_min:
             current_location-=image_rr_interval_dist
             self._probability_center_list.append(current_location)
@@ -363,11 +364,14 @@ class RWaveExtractor_Cluster(FeatureExtractor):
 
         for i in self._probability_center_list:
             self._R_dist_probability[:,1]+=norm.pdf(self._R_dist_probability[:,0],loc=i,scale=self._gmm_scale)
+            #tmp=norm.pdf(self._R_dist_probability[:,0],loc=i,scale=self._gmm_scale)
+            #plt.plot(self._R_dist_probability[:,0],tmp)
 
-        self._R_dist_probability[0:ecg_location_x_min,1]=0
-        self._R_dist_probability[ecg_location_x_max:,1]=0
-        #plt.figure()
-        #plt.plot(R_dist_probability[:,0],R_dist_probability[:,1])
+
+        #self._R_dist_probability[0:ecg_location_x_min,1]=0
+        #self._R_dist_probability[ecg_location_x_max:,1]=0
+        ##plt.figure()
+        #plt.plot(self._R_dist_probability[:,0],self._R_dist_probability[:,1],'b')
         #plt.show()
         
         return self._R_dist_probability

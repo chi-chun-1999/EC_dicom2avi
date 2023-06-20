@@ -47,7 +47,8 @@ class NumpyEncoder(json.JSONEncoder):
 @click.option('-f','--fps','fps',default=30,help='The fps of avi',type=float,show_default=True)
 @click.option('-o','--output','output',default='./',show_default=True,help='The output directory of multi cycle data',type=click.Path())
 @click.option('--export_data','export_data',default='all',show_default=True,help='You can only output npy file or avi file. The default will export above of all.',type=str)
-def main(file_path,output,fps,export_data):
+@click.option('--export_whole','export_whole',default=1,show_default=True,help='Export dicom whole array data',type=bool)
+def main(file_path,output,fps,export_data,export_whole):
     #print(file_path,output)
     #click.echo(file_path)
     
@@ -74,13 +75,20 @@ def main(file_path,output,fps,export_data):
 
         else:
 
-            #if export_data=='all':
-            #    extract_multi_cycle.exportNpy(output)
-            #    extract_multi_cycle.exportAvi(output,fps=fps)
-            #elif export_data=='npy':
-            #    extract_multi_cycle.exportNpy(output)
-            #elif export_data=='avi':
-            #    extract_multi_cycle.exportAvi(output,fps=fps)
+            if export_data=='all':
+                if export_whole:
+                    extract_multi_cycle.exportWholeNpy(output)
+                    extract_multi_cycle.exportWholeAvi(output,fps=fps)
+                extract_multi_cycle.exportNpy(output)
+                extract_multi_cycle.exportAvi(output,fps=fps)
+            elif export_data=='npy':
+                if export_whole:
+                    extract_multi_cycle.exportWholeNpy(output)
+                extract_multi_cycle.exportNpy(output)
+            elif export_data=='avi':
+                if export_whole:
+                    extract_multi_cycle.exportWholeAvi(output,fps=fps)
+                extract_multi_cycle.exportAvi(output,fps=fps)
             demc_info['process_file_num']+=1
             demc_info['process_file_info'].append(extract_multi_cycle.exportExtractInfo())
                 

@@ -6,6 +6,7 @@
 *.npy
 *.mp4
 .tags
+*.json
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

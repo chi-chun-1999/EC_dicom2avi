@@ -31,7 +31,7 @@ for f in dicom_files:
         files_4d.append(f)
 
 #%%
-dcm = pydicom.dcmread(files_4d[1])
+dcm = pydicom.dcmread(files_4d[18])
 #video_array = avi2array(video_name)
 #npy_array = np.load('./test.npz.npy')
 
@@ -49,6 +49,8 @@ dcm_bgr_array = dcm_rgb_array[:,:,:,::-1]
 
 ecg_roi =getECGRoi_FixSize(dcm_bgr_array,[350,434,0,400]) 
 
+plt.figure()
+plt.imshow(dcm_bgr_array[0,:,:,::-1])
 
 plt.figure()
 plt.imshow(ecg_roi[0,:,:,::-1])

@@ -10,6 +10,7 @@ from .feature import FeatureExtractor, RedExtractor, RWaveExtractor_IntervalMax
 from .video import array2avi
 from .frame import getRgbArray, getECGRoi_FixSize
 import pydicom
+import pandas as pd
 
 
 class CycleAbstract(abc.ABC):
@@ -31,8 +32,12 @@ class CycleAbstract(abc.ABC):
     
     def _exportFilePath(self,file_name_extension,idx,export_dir = './'):
         #export_file_path = export_dir+self._file_name+'_'+__class__.__name__+'_'+str(idx)+'.'+file_name_extension
-        export_file_path = "%s%s_%s_%d.%s"%(export_dir,self._file_name,type(self).__name__,idx,file_name_extension)
-        
+        if idx!=-1:
+            export_file_path = "%s%s_%s_%d.%s"%(export_dir,self._file_name,type(self).__name__,idx,file_name_extension)
+        else:
+            whole_str = 'whole'
+            export_file_path = "%s%s_%s.%s"%(export_dir,self._file_name,whole_str,file_name_extension)
+            
         return export_file_path
     
     def createOutputDir(self, export_dir):
@@ -40,6 +45,33 @@ class CycleAbstract(abc.ABC):
         if os.path.isdir(export_dir)==False:
             os.makedirs(export_dir)
     
+    def exportWholeNpy(self,export_dir=None):
+        if export_dir == None:
+            export_dir = './'+self._file_name+'/'
+            
+        else:
+            if export_dir[-1]!='/':
+                export_dir+='/'
+            export_dir+=self._file_name+'/'
+
+        self.createOutputDir(export_dir)
+        export_file_path = self._exportFilePath('npy',-1,export_dir)
+        np.save(export_file_path,self._dcm_rgb_array)
+
+    def exportWholeAvi(self,export_dir=None,fps=30):
+        if export_dir == None:
+            export_dir = './'+self._file_name+'/'
+            
+        else:
+            if export_dir[-1]!='/':
+                export_dir+='/'
+            export_dir+=self._file_name+'/'
+
+        self.createOutputDir(export_dir)
+        export_file_path = self._exportFilePath('avi',-1,export_dir)
+        array2avi(self._dcm_rgb_array,export_file_path,fps=fps,numpy_channel=True)
+
+        
 
     def exportNpy(self,export_dir = None):
         if export_dir == None:
@@ -73,7 +105,11 @@ class CycleAbstract(abc.ABC):
             #print(export_file_path)
             
             array2avi(self._cycle_data[i],export_file_path,fps=fps,numpy_channel=True)
-
+        
+    @abc.abstractmethod
+    def exportExtractInfo(self):
+        raise NotImplementedError
+        
             
 class ExtractMulitCycle(CycleAbstract):
     def __init__(self, dicom_file_path,red_extractor = None,r_wave_extractor=None) -> None:
@@ -90,6 +126,7 @@ class ExtractMulitCycle(CycleAbstract):
     
     def extractCycle(self):
 
+        self._unregualr_rr_interval = False
 
         dcm = pydicom.read_file(self._dicom_file_path)
 
@@ -98,8 +135,8 @@ class ExtractMulitCycle(CycleAbstract):
             error_str = "The dicom file of "+self._file_name+' msut be 4 dimesion array, but getting '+str(input_dicom_dim)+'.'
             raise ValueError(error_str)
 
-        dcm_rgb_array =  getRgbArray(dcm)
-        dcm_bgr_array = dcm_rgb_array[:,:,:,::-1]
+        self._dcm_rgb_array =  getRgbArray(dcm)
+        dcm_bgr_array = self._dcm_rgb_array[:,:,:,::-1]
         
 
 #plt.imshow(video_array[1,350:,0:318,:])
@@ -109,12 +146,15 @@ class ExtractMulitCycle(CycleAbstract):
         red_mask = self._red_extractor.process(ecg_roi)
         red_argwhere = np.argwhere(red_mask)
 
-        r_wave_location = self._r_wave_extractor.process(ecg_roi)
+        self._r_wave_location = self._r_wave_extractor.process(ecg_roi)
+        
+        self._unregualr_rr_interval = self.detectUnregular_RRInterval()
+        
 
         #show_R_wave_place(ecg_roi,r_wave_location)
-        match_frame =[]
+        self._match_frame =[]
 
-        for i in r_wave_location:
+        for i in self._r_wave_location:
             red_match_r_wave = red_argwhere[red_argwhere[:,2]==i[0]]
             bias = 0 
             while(red_match_r_wave.size==0):
@@ -125,12 +165,40 @@ class ExtractMulitCycle(CycleAbstract):
                 
                 red_match_r_wave = red_argwhere[red_argwhere[:,2]==i[0]+bias]
             
-            match_frame.append(red_match_r_wave[0,0])
+            self._match_frame.append(red_match_r_wave[0,0])
             
-        for i in range(len(match_frame)-1):
-            tmp_cycle_data = dcm_rgb_array[match_frame[i]:match_frame[i+1],:,:,:]
+        for i in range(len(self._match_frame)-1):
+            tmp_cycle_data = self._dcm_rgb_array[self._match_frame[i]:self._match_frame[i+1],:,:,:]
             self._cycle_data.append(tmp_cycle_data)
                     
         #print(match_frame)
+        
+    def detectUnregular_RRInterval(self):
+        
+        for i in range(len(self._r_wave_location)-1):
+            
+            if self._r_wave_location[i+1][0] -self._r_wave_location[i][0]>=90:
+                
+                print("Warnning: Detect unregular RR interval length.")
+                return True
+
+            elif self._r_wave_location[i+1][0] -self._r_wave_location[i][0]<=40:
+                print("Warnning: Detect unregular RR interval length.")
+                return True
+
+        return False
+    
+    def exportExtractInfo(self):
+
+        self._extract_info = {}
+        self._extract_info['Name'] = self._file_name
+        self._extract_info['R_wave_location'] = self._r_wave_location
+        self._extract_info['extract_frame'] = self._match_frame
+        self._extract_info['unregular_rr_interval'] = self._unregualr_rr_interval
+        
+        #print(self._extract_info)
+        
+        return self._extract_info
+        
         
         
