@@ -18,7 +18,7 @@ from scipy.stats import norm
 from sklearn.cluster import DBSCAN
 import glob
 #%%
-data_dir = '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/*'
+data_dir = '../../dataset/test/__174122/*'
 
 print(glob.glob(data_dir))
 dicom_files = glob.glob(data_dir)

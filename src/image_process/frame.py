@@ -21,7 +21,7 @@ def getRgbArray(dicom_file: Type[pydicom.FileDataset]) -> np.ndarray:
         return rgb_array
     
 
-def getECGRoi_FixSize(image:np.ndarray,roi_loaction=None):
+def getECGRoi_FixSize(image:np.ndarray,roi_location=None):
     '''
     get ECG FIXED SIZE ROI from the Echocardiography RGB array 
     
@@ -39,16 +39,47 @@ def getECGRoi_FixSize(image:np.ndarray,roi_loaction=None):
     img_size = image.shape
     
     if image.ndim == 4:
-        if roi_loaction ==None:
+        if roi_location ==None:
             ecg_roi = image[:,350:,:int(img_size[2]/2),:]
         else:
-            ecg_roi = image[:,roi_loaction[0]:roi_loaction[1],roi_loaction[2]:roi_loaction[3],:]
+            ecg_roi = image[:,roi_location[0]:roi_location[1],roi_location[2]:roi_location[3],:]
     
     else:
-        if roi_loaction ==None:
+        if roi_location ==None:
             ecg_roi = image[350:,:int(img_size[2]/2),:]
         else:
-            ecg_roi = image[roi_loaction[0]:roi_loaction[1],roi_loaction[2]:roi_loaction[3],:]
+            ecg_roi = image[roi_location[0]:roi_location[1],roi_location[2]:roi_location[3],:]
+    
+    return ecg_roi
+
+def getHeartRateROI_FixSize(image:np.ndarray,roi_location=None):
+    '''
+    get heart rate FIXED SIZE ROI from the Echocardiography RGB array 
+    
+    image: 3 dimension image or 4 dimesion video data
+    roi_loaction: please input 4 element data. roi_location[0] and roi_loaction[1] is range for y axis, and roi_location[0] and roi_loaction[1] is range for x axis.
+
+    retrun:
+    ecg_roi: get heart rate ROI 
+    
+    '''
+    
+    if image.ndim!=4 and image.ndim!=3:
+        raise ValueError('The dimesion of input image not correct. Please input 3 or 4 dimesion data!')
+        
+    img_size = image.shape
+    
+    if image.ndim == 4:
+        if roi_location ==None:
+            ecg_roi = image[:,400:422,600:,:]
+        else:
+            ecg_roi = image[:,roi_location[0]:roi_location[1],roi_location[2]:roi_location[3],:]
+    
+    else:
+        if roi_location ==None:
+            ecg_roi = image[400:422,600:,:]
+        else:
+            ecg_roi = image[roi_location[0]:roi_location[1],roi_location[2]:roi_location[3],:]
     
     return ecg_roi
     
