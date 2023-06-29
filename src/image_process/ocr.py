@@ -47,7 +47,7 @@ class NumberOCR_Template(OCR):
         num = np.argmax(score)
         return num
         
-class HearRateOCR(OCR):
+class HeartRateOCR(OCR):
     def __init__(self,NumberOCR:NumberOCR_Template) -> None:
         self._number_ocr = NumberOCR
         self._number_roi = (10,8)

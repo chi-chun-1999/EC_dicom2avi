@@ -36,26 +36,26 @@ from unittest.mock import patch
 #        #head,file_name = os.path.split(f)
 #        files_4d.append(f)
 
-files_4d = ['../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSSH2',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHST1G',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSSH4',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSQ00',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSS8S',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHST9M',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHST9K',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSR8G',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSR8I',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHST1C',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHST1E',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSSPA',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSS90',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSSP8',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSSP6',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSTHO',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSQO2',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSR0C',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHST9I',
- '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSR0E']
+files_4d = ['../../dataset/test/__174122/KBIHSSH2',
+ '../../dataset/test/__174122/KBIHST1G',
+ '../../dataset/test/__174122/KBIHSSH4',
+ '../../dataset/test/__174122/KBIHSQ00',
+ '../../dataset/test/__174122/KBIHSS8S',
+ '../../dataset/test/__174122/KBIHST9M',
+ '../../dataset/test/__174122/KBIHST9K',
+ '../../dataset/test/__174122/KBIHSR8G',
+ '../../dataset/test/__174122/KBIHSR8I',
+ '../../dataset/test/__174122/KBIHST1C',
+ '../../dataset/test/__174122/KBIHST1E',
+ '../../dataset/test/__174122/KBIHSSPA',
+ '../../dataset/test/__174122/KBIHSS90',
+ '../../dataset/test/__174122/KBIHSSP8',
+ '../../dataset/test/__174122/KBIHSSP6',
+ '../../dataset/test/__174122/KBIHSTHO',
+ '../../dataset/test/__174122/KBIHSQO2',
+ '../../dataset/test/__174122/KBIHSR0C',
+ '../../dataset/test/__174122/KBIHST9I',
+ '../../dataset/test/__174122/KBIHSR0E']
 
 #%%
 
@@ -82,13 +82,14 @@ class TestMultiCycle(TestCase):
         #print(len(multi_cycle_lists))
         #print(multi_cycle_lists[0].shape)
         #matplot_show_video(multi_cycle_lists[0])
+        plt.imshow(multi_cycle_lists[0][0])
 
     def test_export_data(self):
         self.extract_multi_cycle.exportAvi()
         self.extract_multi_cycle.exportNpy()
 
     def test_detect_unregular_r_wave(self):
-        self.extract_multi_cycle.detectUnregular_RRInterval()
+        print(self.extract_multi_cycle.detectUnregular_RRInterval())
     
     def test_extract_info(self):
         return self.extract_multi_cycle.exportExtractInfo()
@@ -99,7 +100,9 @@ class TestMultiCycle(TestCase):
 test_cycle = TestMultiCycle()
 test_cycle.test_extract_cycle()
 #test_cycle.test_export_data()
-#test_cycle.test_detect_unregular_r_wave()
-extract_info = test_cycle.test_extract_info()
+test_cycle.test_detect_unregular_r_wave()
+
+# extract_info = test_cycle.test_extract_info()
 
 # %%
+

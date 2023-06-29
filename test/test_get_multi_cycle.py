@@ -17,7 +17,7 @@ from src.show.matplot_show import matplot_show_video,show_R_wave_place
 
 import glob
 #%%
-data_dir = '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/*'
+data_dir = '../../dataset/test/__174122/*'
 
 print(glob.glob(data_dir))
 dicom_files = glob.glob(data_dir)
@@ -31,7 +31,7 @@ for f in dicom_files:
         files_4d.append(f)
 
 #%%
-dcm = pydicom.dcmread(files_4d[18])
+dcm = pydicom.dcmread(files_4d[2])
 #video_array = avi2array(video_name)
 #npy_array = np.load('./test.npz.npy')
 
@@ -79,6 +79,7 @@ for i in r_wave_location:
     
     match_frame.append(red_match_r_wave[0,0])
 
+print(r_wave_location)
 print(match_frame) 
     
         

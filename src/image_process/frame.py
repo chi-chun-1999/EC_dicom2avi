@@ -100,3 +100,15 @@ def denoiseEco(image,denoise_thres=3):
     return denoise_image
 
     
+def getPixelMs(rr_interval_pixel,heart_rate):
+    """
+    Get millisecond for each pixel
+
+    input:
+    rr_interval_pixel: the pixel length between the two lines.
+    heart_rate:    the heart rate between the two lines
+    
+    """
+    rr_interval_ms = 60000/heart_rate
+    pixel_ms = rr_interval_ms/rr_interval_pixel
+    return pixel_ms

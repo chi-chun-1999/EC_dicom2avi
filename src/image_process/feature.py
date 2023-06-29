@@ -1,3 +1,9 @@
+import os 
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+from src.image_process.frame import getECGRoi_FixSize
+
 import cv2 as cv
 import numpy as np
 import abc
@@ -242,14 +248,15 @@ class RRIntervalExtractor(FeatureExtractor):
         Given a 4-dimensional video array, this function extracts a cycle of heart Echocardiography data from the extract_data.
         
         input:
-        extract_data: The 4-dim numpy array echo data.
+        extract_data: The 4-dim numpy array echo data. The channel of the input data is 'bgr' for opencv format.
         
         return:
         extract_data[cycle_start:cycle_end]: a cycle of heart Echocardiography data.
         
         '''
 
-        self.__extract_data = extract_data
+        #self.__extract_data = extract_data
+        self.__extract_data = getECGRoi_FixSize(extract_data)
         
         red_mask = self._red_feature_extractor.process(self.__extract_data)
 
@@ -283,9 +290,11 @@ class RRIntervalExtractor(FeatureExtractor):
 
         #print(match_first_line)
         #print(match_second_line)
+        self._first_yellow_line = yellow_line_argwhere[0,0]
+        self._second_yellow_line = yellow_line_argwhere[1,0]
 
-        #print(yellow_line_argwhere[0,0])
-        #print(yellow_line_argwhere[1,0])
+        # print(yellow_line_argwhere[0,0])
+        # print(yellow_line_argwhere[1,0])
             
 
         cycle_start = match_first_line[0,0]
@@ -293,6 +302,12 @@ class RRIntervalExtractor(FeatureExtractor):
         #print(cycle_start)
         #print(cycle_end)
         return (cycle_start,cycle_end)
+    def getTwoLineLocation(self):
+        
+        if self._first_yellow_line<self._second_yellow_line:
+            return self._first_yellow_line,self._second_yellow_line
+        else:
+            return self._second_yellow_line,self._first_yellow_line
 
 
 class RWaveExtractor_Cluster(FeatureExtractor):

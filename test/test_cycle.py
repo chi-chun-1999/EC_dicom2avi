@@ -21,20 +21,20 @@ print(video_array.shape)
 #plt.imshow(video_array[1,350:,0:318,:])
 
 
-ecg_roi =getECGRoi_FixSize(video_array) 
+#ecg_roi =getECGRoi_FixSize(video_array) 
 
 red_extractor = RedExtractor()
 #
 rr_interval_extractor = RRIntervalExtractor()
-rr_start, rr_end = rr_interval_extractor.process(ecg_roi)
+rr_start, rr_end = rr_interval_extractor.process(video_array)
 
-cycle_start = rr_start - int((rr_end-rr_start)/3)
-cycle_end = rr_end - int((rr_end-rr_start)/3)
+cycle_start = rr_start
+cycle_end = rr_end
 
-#matplot_show_video(video_array[cycle_start:cycle_end])
+matplot_show_video(video_array[cycle_start:cycle_end])
 
-cycyle_file_name = '../data_video/KBIHSS90_cycle.avi'
-array2avi(video_array[cycle_start:cycle_end],cycyle_file_name,30)
+#cycyle_file_name = '../data_video/KBIHSS90_cycle.avi'
+#array2avi(video_array[cycle_start:cycle_end],cycyle_file_name,30)
 
 
 

@@ -11,6 +11,9 @@ from .video import array2avi
 from .frame import getRgbArray, getECGRoi_FixSize
 import pydicom
 import pandas as pd
+from src.image_process.ocr import HeartRateOCR, NumberOCR_Template
+from src.image_process.feature import RRIntervalExtractor
+from src.image_process.frame import getPixelMs
 
 
 class CycleAbstract(abc.ABC):
@@ -112,7 +115,7 @@ class CycleAbstract(abc.ABC):
         
             
 class ExtractMulitCycle(CycleAbstract):
-    def __init__(self, dicom_file_path,red_extractor = None,r_wave_extractor=None) -> None:
+    def __init__(self, dicom_file_path,red_extractor = None,r_wave_extractor=None,ocr_weight_path='../config/template_number.npy') -> None:
         super().__init__(dicom_file_path)
         
         if red_extractor ==None:
@@ -123,6 +126,15 @@ class ExtractMulitCycle(CycleAbstract):
             self._r_wave_extractor = RWaveExtractor_IntervalMax()
         else:
             self._r_wave_extractor = r_wave_extractor
+            
+        # Unregular Interval detect init
+        
+        self._ocr_weight_path = ocr_weight_path
+        
+        template = np.load(self._ocr_weight_path)
+
+        self._number_ocr = NumberOCR_Template(template)
+        self._heart_rate_ocr = HeartRateOCR(self._number_ocr)
     
     def extractCycle(self):
 
@@ -148,7 +160,6 @@ class ExtractMulitCycle(CycleAbstract):
 
         self._r_wave_location = self._r_wave_extractor.process(ecg_roi)
         
-        self._unregualr_rr_interval = self.detectUnregular_RRInterval()
         
 
         #show_R_wave_place(ecg_roi,r_wave_location)
@@ -171,20 +182,48 @@ class ExtractMulitCycle(CycleAbstract):
             tmp_cycle_data = self._dcm_rgb_array[self._match_frame[i]:self._match_frame[i+1],:,:,:]
             self._cycle_data.append(tmp_cycle_data)
                     
+        self._unregualr_rr_interval = self.detectUnregular_RRInterval()
         #print(match_frame)
         
     def detectUnregular_RRInterval(self):
+       
         
+        first_line = self._r_wave_location[-2][0] 
+        second_line = self._r_wave_location[-1][0] 
+        rr_interval_pixel = second_line-first_line
+
+        cycle_start = self._match_frame[-2]
+        cycle_end = self._match_frame[-1]
+        detect_frame = self._dcm_rgb_array[int((cycle_start+cycle_end)/2)]
+        
+        heart_rate = self._heart_rate_ocr.fit(detect_frame)
+        pixel_ms = getPixelMs(rr_interval_pixel,heart_rate)
+        
+        
+         
         for i in range(len(self._r_wave_location)-1):
             
-            if self._r_wave_location[i+1][0] -self._r_wave_location[i][0]>=90:
-                
-                print("Warnning: Detect unregular RR interval length.")
-                return True
+            
+            tmp_rr_interval_pixel = self._r_wave_location[i+1][0]-self._r_wave_location[i][0]
+            
+            tmp_rr_interval_ms = tmp_rr_interval_pixel*pixel_ms
+            # print(tmp_rr_interval_ms)
+            
+            #if self._r_wave_location[i+1][0] -self._r_wave_location[i][0]>=90:
+            #   
+            #    print("Warnning: Detect unregular RR interval length.")
+            #    return True
 
-            elif self._r_wave_location[i+1][0] -self._r_wave_location[i][0]<=40:
+            #elif self._r_wave_location[i+1][0] -self._r_wave_location[i][0]<=40:
+            #    print("Warnning: Detect unregular RR interval length.")
+            #    return True
+            if tmp_rr_interval_ms > 1200:
                 print("Warnning: Detect unregular RR interval length.")
                 return True
+            elif tmp_rr_interval_ms < 600:
+                print("Warnning: Detect unregular RR interval length.")
+                return True
+                
 
         return False
     
