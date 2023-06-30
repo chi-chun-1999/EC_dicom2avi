@@ -21,3 +21,6 @@ class ECData():
     
     def getRgbArray(self):
         return self._dcm_rgb_array
+
+    def getPath(self):
+        return self._file_path

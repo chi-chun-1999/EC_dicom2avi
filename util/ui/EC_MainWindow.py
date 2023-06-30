@@ -4,9 +4,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from PyQt5 import QtWidgets
 from EC_dicom2avi_ui import Ui_MainWindow
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QFileDialog, QErrorMessage
+from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup
 from src.ec_ui import ECData
 from src.ec_ui.show_ui import MplCanvas
+from src.ec_ui.process_ui import StartExtractData
 import pydicom
 
 
@@ -23,20 +24,33 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self._mpl_canvas = MplCanvas()
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self._mpl_canvas)
-        self.__ui.widget_picture.setLayout(layout)
+        self.button_group = QButtonGroup(self)
+        self.button_group.addButton(self.__ui.radioButton_all,1)
+        self.button_group.addButton(self.__ui.radioButton_avi,2)
+        self.button_group.addButton(self.__ui.radioButton_npy,3)
+        self.button_group.buttonClicked.connect(self.do_show)
+
+        # self.__ui.widget_picture.setLayout(layout)
 
         #self.__ui.pushButton_file..connect(self.ec_func)
+        self.do_show()
 
-    def on_pushButton_file_released(self):
+    def do_show(self):
+        print(self.button_group.checkedId())
+
+        
+    @pyqtSlot(bool)
+    def on_actionOpen_file_open_triggered(self,checked):
         files_path = QFileDialog.getOpenFileNames(self)
         for f in files_path[0]:
             file_head, file_tail = os.path.split(f)
 
             try:
-                dcm = pydicom.dcmread(f)
-                tmp_ec_data = ECData(f,file_tail,dcm)
-                self._files_dict[file_tail] = tmp_ec_data
-                self.__ui.listWidget_file.addItem(file_tail)
+                if not(file_tail in self._files_dict):
+                    dcm = pydicom.dcmread(f)
+                    tmp_ec_data = ECData(f,file_tail,dcm)
+                    self._files_dict[file_tail] = tmp_ec_data
+                    self.__ui.listWidget_file.addItem(file_tail)
             except pydicom.errors.InvalidDicomError as e:
                 print(e)
                 self._error_file.append(file_tail)
@@ -49,9 +63,13 @@ class EC_MainWindow(QtWidgets.QMainWindow):
             message = QErrorMessage(self)
             message.showMessage(error_file)
         
+        for idx, j in self._files_dict.items():
+            print(idx,j.getPath())
+        
 
     def on_pushButton_export_released(self):
         self._export_path = QFileDialog.getExistingDirectory(self)
+        self.__ui.lineEdit_export_path.setText(self._export_path)
         
     def on_listWidget_file_itemDoubleClicked(self):
         select_file = self.__ui.listWidget_file.currentItem().text()
@@ -68,28 +86,12 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         
         self._mpl_canvas.show_whole_frame(rgb_array_data,self._current_frame_num)
 
-    def on_pushButton_next_pic_released(self):
-        self._current_frame_num += 1
-        self.__ui.lineEdit_current_pic.setText(str(self._current_frame_num))
-        rgb_array_data = self._current_show_file.getRgbArray()
-
-        self._mpl_canvas.show_whole_frame(rgb_array_data,self._current_frame_num)
+    def on_pushButton_start_released(self):
+        export_data_dict = {1:'all',2:'avi',3:'npy'}
+        demc_info = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
-    def on_pushButton_last_pic_released(self):
-        self._current_frame_num -= 1
-        self.__ui.lineEdit_current_pic.setText(str(self._current_frame_num))
-        rgb_array_data = self._current_show_file.getRgbArray()
-
-        self._mpl_canvas.show_whole_frame(rgb_array_data,self._current_frame_num)
-    
-    #def setCurrenctPic(self,frame):
-    #    if frame<self.__ui.
+        print(demc_info)
         
-        
-        
-
-        
-
         
 
 if __name__=="__main__":
