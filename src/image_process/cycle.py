@@ -176,7 +176,7 @@ class ExtractMulitCycle(CycleAbstract):
                 
                 red_match_r_wave = red_argwhere[red_argwhere[:,2]==i[0]+bias]
             
-            self._match_frame.append(red_match_r_wave[0,0])
+            self._match_frame.append(int(red_match_r_wave[0,0]))
             
         for i in range(len(self._match_frame)-1):
             tmp_cycle_data = self._dcm_rgb_array[self._match_frame[i]:self._match_frame[i+1],:,:,:]
@@ -228,10 +228,16 @@ class ExtractMulitCycle(CycleAbstract):
         return False
     
     def exportExtractInfo(self):
+        
+        r_wave_location_dict = []
+
+        for i in self._r_wave_location:
+            r_wave_location_dict.append({'x':i[0],'y':i[1]})
+            
 
         self._extract_info = {}
         self._extract_info['Name'] = self._file_name
-        self._extract_info['R_wave_location'] = self._r_wave_location
+        self._extract_info['R_wave_location'] = r_wave_location_dict
         self._extract_info['extract_frame'] = self._match_frame
         self._extract_info['unregular_rr_interval'] = self._unregualr_rr_interval
         

@@ -554,7 +554,7 @@ class RWaveExtractor_IntervalMax(RWaveExtractor_Cluster):
 #print(r_wave_x_loactions)
         #print(r_wave_location_dict)
 
-        r_wave_location = [(k,v) for k,v in r_wave_location_dict.items()]
+        r_wave_location = [(int(k),int(v)) for k,v in r_wave_location_dict.items()]
         
         
         return r_wave_location

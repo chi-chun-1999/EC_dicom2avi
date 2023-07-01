@@ -6,9 +6,10 @@ from EC_dicom2avi_ui import Ui_MainWindow
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup
 from src.ec_ui import ECData
-from src.ec_ui.show_ui import MplCanvas
+from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome,TableModel, SimpleDictModel
 from src.ec_ui.process_ui import StartExtractData
 import pydicom
+import pandas as pd
 
 
 
@@ -90,7 +91,23 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         export_data_dict = {1:'all',2:'avi',3:'npy'}
         demc_info = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
-        print(demc_info)
+        # demc_info = {'process_time': 'Fri Jun 30 17:56:41 2023', 'process_file_num': 2, 'process_file_info': [{'Name': 'KBIHSQ00', 'R_wave_location': [(98, 52), (175, 52), (259, 52)], 'extract_frame': [22, 47, 75], 'unregular_rr_interval': False}, {'Name': 'KBIHSQO2', 'R_wave_location': [(32, 52), (109, 52), (186, 52), (263, 52)], 'extract_frame': [0, 25, 51, 76], 'unregular_rr_interval': False}]}
+        # print(demc_info)
+        self.__ui.lineEdit_process_time.setText( demc_info['process_time'])
+        self.__ui.lineEdit_process_file_num.setText(str(demc_info['process_file_num']))
+        
+        data = pd.DataFrame(demc_info['process_file_info'])
+        
+        tmp = data.copy().set_index('Name')
+        data_dict = tmp.to_dict()
+        
+        # self._model = TableModel(data)
+        self._model = SimpleDictModel(data_dict)
+
+
+        self.__ui.treeView_outcome.setModel(self._model)
+        
+        #ShowExtractOutcome(demc_info)
         
         
 
