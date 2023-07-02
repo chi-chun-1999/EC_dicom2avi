@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from PyQt5 import QtWidgets
 from EC_dicom2avi_ui import Ui_MainWindow
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup
+from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup, QMessageBox
 from src.ec_ui import ECData
 from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome,TableModel, SimpleDictModel
 from src.ec_ui.process_ui import StartExtractData
@@ -19,7 +19,6 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         super().__init__(parent)
         self.__ui = Ui_MainWindow()
         self.__ui.setupUi(self)
-        self._error_file  = []
         self._files_dict = {}
 
         self._mpl_canvas = MplCanvas()
@@ -40,6 +39,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         print(self.button_group.checkedId())
 
     def addFile(self):
+        self._error_file  = []
         files_path = QFileDialog.getOpenFileNames(self)
         for f in files_path[0]:
             file_head, file_tail = os.path.split(f)
@@ -55,8 +55,8 @@ class EC_MainWindow(QtWidgets.QMainWindow):
                     print(self._error_file)
                     error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
                     
-                    message = QErrorMessage(self)
-                    message.showMessage(error_file)
+                    message = QMessageBox.critical(self,"Error",error_file,buttons=QMessageBox.StandardButton.Ok)
+                    # message.showMessage(error_file)
             
             else:
                 if not(file_tail in self._files_dict):

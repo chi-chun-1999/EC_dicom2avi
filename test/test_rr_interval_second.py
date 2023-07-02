@@ -48,7 +48,7 @@ files_4d = ['../../dataset/test/__174122/KBIHSSH2',
 
 #%%
 
-dcm = pydicom.dcmread(files_4d[2])
+dcm = pydicom.dcmread(files_4d[5])
 
 dcm_rgb_array =  getRgbArray(dcm)
 dcm_bgr_array = dcm_rgb_array[:,:,:,::-1]
