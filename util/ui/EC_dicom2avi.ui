@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>777</width>
-    <height>792</height>
+    <width>840</width>
+    <height>849</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -69,14 +69,14 @@
             </spacer>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="pushButton_add_file">
              <property name="text">
               <string>+</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_2">
+            <widget class="QPushButton" name="pushButton_delete_file">
              <property name="text">
               <string>-</string>
              </property>
@@ -329,8 +329,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>777</width>
-     <height>24</height>
+     <width>840</width>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufile_file">

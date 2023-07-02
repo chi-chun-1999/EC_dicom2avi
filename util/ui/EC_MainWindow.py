@@ -34,14 +34,12 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         # self.__ui.widget_picture.setLayout(layout)
 
         #self.__ui.pushButton_file..connect(self.ec_func)
-        self.do_show()
+        #self.do_show()
 
     def do_show(self):
         print(self.button_group.checkedId())
 
-        
-    @pyqtSlot(bool)
-    def on_actionOpen_file_open_triggered(self,checked):
+    def addFile(self):
         files_path = QFileDialog.getOpenFileNames(self)
         for f in files_path[0]:
             file_head, file_tail = os.path.split(f)
@@ -50,42 +48,57 @@ class EC_MainWindow(QtWidgets.QMainWindow):
                 if not(file_tail in self._files_dict):
                     dcm = pydicom.dcmread(f)
                     tmp_ec_data = ECData(f,file_tail,dcm)
-                    self._files_dict[file_tail] = tmp_ec_data
-                    self.__ui.listWidget_file.addItem(file_tail)
             except pydicom.errors.InvalidDicomError as e:
                 print(e)
                 self._error_file.append(file_tail)
-
-
-        if len(self._error_file)>=1:
-            print(self._error_file)
-            error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
+                if len(self._error_file)>=1:
+                    print(self._error_file)
+                    error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
+                    
+                    message = QErrorMessage(self)
+                    message.showMessage(error_file)
             
-            message = QErrorMessage(self)
-            message.showMessage(error_file)
+            else:
+                if not(file_tail in self._files_dict):
+                    self._files_dict[file_tail] = tmp_ec_data
+                    self.__ui.listWidget_file.addItem(file_tail)
+        # for idx, j in self._files_dict.items():
+        #     print(idx,j.getPath())
+
+    @pyqtSlot(bool)
+    def on_actionOpen_file_open_triggered(self,checked):
+        self.addFile()
+
+    def on_pushButton_add_file_released(self):
+        self.addFile()
+    
+    def on_pushButton_delete_file_released(self):
+        #print(self.__ui.listWidget_file.currentItem())
         
-        for idx, j in self._files_dict.items():
-            print(idx,j.getPath())
-        
+        if self.__ui.listWidget_file.currentItem()!=None:
+            del self._files_dict[self.__ui.listWidget_file.currentItem().text()]
+            delete_item = self.__ui.listWidget_file.takeItem(self.__ui.listWidget_file.currentRow())
+            del delete_item
 
     def on_pushButton_export_released(self):
+        
         self._export_path = QFileDialog.getExistingDirectory(self)
         self.__ui.lineEdit_export_path.setText(self._export_path)
         
-    def on_listWidget_file_itemDoubleClicked(self):
-        select_file = self.__ui.listWidget_file.currentItem().text()
-        select_num = self.__ui.listWidget_file.currentIndex().row()
-        print(select_num,select_file)
-        print(self._files_dict[select_file]._file_path)
-        self._current_show_file = self._files_dict[select_file]
-        self._current_show_file.loadData()
-        rgb_array_data = self._current_show_file.getRgbArray()
-        print(rgb_array_data.shape)
-        self._current_frame_num = 0
-        self.__ui.lineEdit_current_pic.setText(str(self._current_frame_num))
-        self.__ui.lineEdit_all_pic.setText(str(rgb_array_data.shape[0]))
+    # def on_listWidget_file_itemDoubleClicked(self):
+    #     select_file = self.__ui.listWidget_file.currentItem().text()
+    #     select_num = self.__ui.listWidget_file.currentIndex().row()
+    #     print(select_num,select_file)
+    #     print(self._files_dict[select_file]._file_path)
+    #     self._current_show_file = self._files_dict[select_file]
+    #     self._current_show_file.loadData()
+    #     rgb_array_data = self._current_show_file.getRgbArray()
+    #     print(rgb_array_data.shape)
+    #     self._current_frame_num = 0
+    #     self.__ui.lineEdit_current_pic.setText(str(self._current_frame_num))
+    #     self.__ui.lineEdit_all_pic.setText(str(rgb_array_data.shape[0]))
         
-        self._mpl_canvas.show_whole_frame(rgb_array_data,self._current_frame_num)
+    #     self._mpl_canvas.show_whole_frame(rgb_array_data,self._current_frame_num)
 
     def on_pushButton_start_released(self):
         export_data_dict = {1:'all',2:'avi',3:'npy'}

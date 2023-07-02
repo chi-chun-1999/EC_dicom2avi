@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(777, 792)
+        MainWindow.resize(840, 849)
         MainWindow.setStyleSheet("QLineEdit\n"
 "{\n"
 "    color: black;\n"
@@ -42,12 +42,12 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem1)
-        self.pushButton = QtWidgets.QPushButton(self.widget)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout_2.addWidget(self.pushButton)
-        self.pushButton_2 = QtWidgets.QPushButton(self.widget)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout_2.addWidget(self.pushButton_2)
+        self.pushButton_add_file = QtWidgets.QPushButton(self.widget)
+        self.pushButton_add_file.setObjectName("pushButton_add_file")
+        self.horizontalLayout_2.addWidget(self.pushButton_add_file)
+        self.pushButton_delete_file = QtWidgets.QPushButton(self.widget)
+        self.pushButton_delete_file.setObjectName("pushButton_delete_file")
+        self.horizontalLayout_2.addWidget(self.pushButton_delete_file)
         self.horizontalLayout_2.setStretch(0, 2)
         self.horizontalLayout_2.setStretch(1, 1)
         self.horizontalLayout_2.setStretch(2, 1)
@@ -174,7 +174,7 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 777, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 840, 37))
         self.menubar.setObjectName("menubar")
         self.menufile_file = QtWidgets.QMenu(self.menubar)
         self.menufile_file.setObjectName("menufile_file")
@@ -191,8 +191,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label.setText(_translate("MainWindow", "TextLabel"))
-        self.pushButton.setText(_translate("MainWindow", "+"))
-        self.pushButton_2.setText(_translate("MainWindow", "-"))
+        self.pushButton_add_file.setText(_translate("MainWindow", "+"))
+        self.pushButton_delete_file.setText(_translate("MainWindow", "-"))
         self.label_export_path.setText(_translate("MainWindow", "Export Path:"))
         self.pushButton_export.setText(_translate("MainWindow", "select"))
         self.label_export_file_type.setText(_translate("MainWindow", "Export file type:"))
