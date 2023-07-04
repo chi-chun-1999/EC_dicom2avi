@@ -54,6 +54,7 @@ def StartExtractData(file_dict:dict,export_path:str,export_data:str,export_whole
     """
 
     process_time = time.ctime()
+    three_dim_dicom_file = []
     demc_info = {"process_time":process_time,"process_file_num":0,"process_file_info":[]}
     fps = 30
     
@@ -66,6 +67,7 @@ def StartExtractData(file_dict:dict,export_path:str,export_data:str,export_whole
             extract_multi_cycle.extractCycle()
         except ValueError as err:
             print("Warning:",err)
+            three_dim_dicom_file.append(key)
         except pydicom.errors.InvalidDicomError as err:
 
             print("Error:",'\'%s\' is not dicom file. Please input DICOM file.'%(f))
@@ -98,7 +100,7 @@ def StartExtractData(file_dict:dict,export_path:str,export_data:str,export_whole
     with open(demc_info_file_path, 'w') as f:
       f.write(json.dumps(demc_info, indent = 4,cls=NumpyEncoder))
     
-    return demc_info
+    return demc_info,three_dim_dicom_file
     
 
     

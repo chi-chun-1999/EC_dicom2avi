@@ -20,6 +20,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self.__ui = Ui_MainWindow()
         self.__ui.setupUi(self)
         self._files_dict = {}
+        self._export_path = None
 
         self._mpl_canvas = MplCanvas()
         layout = QtWidgets.QVBoxLayout()
@@ -54,7 +55,6 @@ class EC_MainWindow(QtWidgets.QMainWindow):
                 if len(self._error_file)>=1:
                     print(self._error_file)
                     error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
-                    
                     message = QMessageBox.critical(self,"Error",error_file,buttons=QMessageBox.StandardButton.Ok)
                     # message.showMessage(error_file)
             
@@ -79,6 +79,12 @@ class EC_MainWindow(QtWidgets.QMainWindow):
             del self._files_dict[self.__ui.listWidget_file.currentItem().text()]
             delete_item = self.__ui.listWidget_file.takeItem(self.__ui.listWidget_file.currentRow())
             del delete_item
+        else:
+            
+            warning_str = 'Please select the file that will be deleted.'
+            
+            message = QMessageBox.warning(self,"Error",warning_str,buttons=QMessageBox.StandardButton.Ok)
+            # message.showMessage(error_file)
 
     def on_pushButton_export_released(self):
         
@@ -101,9 +107,28 @@ class EC_MainWindow(QtWidgets.QMainWindow):
     #     self._mpl_canvas.show_whole_frame(rgb_array_data,self._current_frame_num)
 
     def on_pushButton_start_released(self):
+
+        if len(self._files_dict)==0 and self._export_path==None:
+            warning_str = 'Please open the file(s) that will be processed and select the path to store the exported file(s). '
+            message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
+            return
+
+        elif len(self._files_dict)==0:
+            warning_str = 'Please open the file(s) that will be processed.'
+            message = QMessageBox.warning(self,"Warning",warning_str,buttons=QMessageBox.StandardButton.Ok)
+            return
+
+        elif self._export_path == None:
+            warning_str = 'Please select the path to store the exported file(s).'
+            message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
+            return
+
         export_data_dict = {1:'all',2:'avi',3:'npy'}
-        demc_info = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
+        demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
+        if len(three_dim_dicom_file)!=0:
+            warning_str = str(three_dim_dicom_file)+' is(are) not 3 dimesion file(s), so it(they) will not be processed.'
+            message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
         # demc_info = {'process_time': 'Fri Jun 30 17:56:41 2023', 'process_file_num': 2, 'process_file_info': [{'Name': 'KBIHSQ00', 'R_wave_location': [(98, 52), (175, 52), (259, 52)], 'extract_frame': [22, 47, 75], 'unregular_rr_interval': False}, {'Name': 'KBIHSQO2', 'R_wave_location': [(32, 52), (109, 52), (186, 52), (263, 52)], 'extract_frame': [0, 25, 51, 76], 'unregular_rr_interval': False}]}
         # print(demc_info)
         self.__ui.lineEdit_process_time.setText( demc_info['process_time'])
