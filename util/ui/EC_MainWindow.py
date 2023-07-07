@@ -3,17 +3,18 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 from PyQt5 import QtWidgets
 from EC_dicom2avi_ui import Ui_MainWindow
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot,QThread, pyqtSignal
 from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup, QMessageBox
 from src.ec_ui import ECData
 from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome,TableModel, SimpleDictModel
-from src.ec_ui.process_ui import StartExtractData
+from src.ec_ui.process_ui import StartExtractData, MultiThreadExtractData
 import pydicom
 import pandas as pd
 
 
 
 class EC_MainWindow(QtWidgets.QMainWindow):
+    _extract_outcome_signal = pyqtSignal(dict,list)
     def __init__(self,parent=None):
 
         super().__init__(parent)
@@ -30,6 +31,8 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self.button_group.addButton(self.__ui.radioButton_avi,2)
         self.button_group.addButton(self.__ui.radioButton_npy,3)
         self.button_group.buttonClicked.connect(self.do_show)
+
+        self._extract_outcome_signal.connect(self.do_showExtractOutcome)
 
         # self.__ui.widget_picture.setLayout(layout)
 
@@ -107,6 +110,10 @@ class EC_MainWindow(QtWidgets.QMainWindow):
     #     self._mpl_canvas.show_whole_frame(rgb_array_data,self._current_frame_num)
 
     def on_pushButton_start_released(self):
+        """
+        Using the MultiThreadExtractData to extract data. And the relative varaiable is self._data_extractor. Due to using multi thread, the function of showing TreeView must also be thread.
+        
+        """
 
         if len(self._files_dict)==0 and self._export_path==None:
             warning_str = 'Please open the file(s) that will be processed and select the path to store the exported file(s). '
@@ -123,9 +130,36 @@ class EC_MainWindow(QtWidgets.QMainWindow):
             message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
             return
 
-        export_data_dict = {1:'all',2:'avi',3:'npy'}
-        demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
+        export_data_dict = {1:'all',2:'avi',3:'npy',4:'None'}
+        # demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
+        self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=3)
+        
+        # for test below funciton will not export extract data
+        # self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[4],thread_num=3)
+
+        self._data_extractor.startExtractData()
+        
+        self._outcome_thread = QThread()
+        self._outcome_thread.run = self.getExtractOutcome
+        self._outcome_thread.start()
+        self.__ui.pushButton_start.setEnabled(False)
+        
+    
+    def getExtractOutcome(self):
+        """
+        """
+        self._data_extractor.threadWait()
+        demc_info,three_dim_dicom_file = self._data_extractor.getOutcome()
+        
+        self._extract_outcome_signal.emit(demc_info,three_dim_dicom_file)
+
+        # print('-----print outcome thread----')
+        
+        #ShowExtractOutcome(demc_info)
+    
+    @pyqtSlot(dict,list)
+    def do_showExtractOutcome(self,demc_info,three_dim_dicom_file):
         if len(three_dim_dicom_file)!=0:
             warning_str = str(three_dim_dicom_file)+' is(are) not 3 dimesion file(s), so it(they) will not be processed.'
             message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
@@ -144,8 +178,9 @@ class EC_MainWindow(QtWidgets.QMainWindow):
 
 
         self.__ui.treeView_outcome.setModel(self._model)
+        self.__ui.pushButton_start.setEnabled(True)
         
-        #ShowExtractOutcome(demc_info)
+
         
         
 
