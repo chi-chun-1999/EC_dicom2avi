@@ -14,6 +14,7 @@ import pandas as pd
 from src.image_process.ocr import HeartRateOCR, NumberOCR_Template
 from src.image_process.feature import RRIntervalExtractor
 from src.image_process.frame import getPixelMs
+from src.exception.value_exception import MultiCycleExtractError
 
 
 class CycleAbstract(abc.ABC):
@@ -175,6 +176,9 @@ class ExtractMulitCycle(CycleAbstract):
                     break
                 
                 red_match_r_wave = red_argwhere[red_argwhere[:,2]==i[0]+bias]
+
+                if bias >=500:
+                    raise MultiCycleExtractError(self._dicom_file_path)
             
             self._match_frame.append(int(red_match_r_wave[0,0]))
             
