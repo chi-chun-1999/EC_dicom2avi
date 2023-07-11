@@ -212,7 +212,9 @@ class FileTree(object):
                 
                 if i ==len(path_list)-1:
                     current_path += path_list[i]
-                    node_data = ECData(current_path,path_list[i],'test')
+                    dcm = pydicom.dcmread(file_path)
+                    node_data = ECData(file_path,path_list[i],dcm)
+                    # node_data = ECData(file_path,path_list[i],'test')
                 
                 else:
                     current_path += path_list[i]+'/'
@@ -260,7 +262,24 @@ class FileTree(object):
 
                 del dir_parent
                 dir_parent = parent
-
+        
         else:
             msg = 'The input node is not file node.'
             raise FileTreeError(msg)
+
+    def showRootNode(self):
+        if len(self.root.children) == 0:
+            return None
+
+        else:
+            show_root = self.root
+            
+            while len(show_root.children)==1:
+                if show_root.children[0].is_leaf:
+                    break
+                show_root = show_root.children[0]
+            
+            return show_root
+        
+
+        

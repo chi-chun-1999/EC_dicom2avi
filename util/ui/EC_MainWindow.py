@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup, QMessageBo
 from src.ec_ui import ECData
 from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome,TableModel, SimpleDictModel
 from src.ec_ui.process_ui import StartExtractData, MultiThreadExtractData
+from src.file_tree.file_tree import FileTree
 import pydicom
 import pandas as pd
 
@@ -33,6 +34,8 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self.button_group.buttonClicked.connect(self.do_show)
 
         self._extract_outcome_signal.connect(self.do_showExtractOutcome)
+        
+        self._file_tree = FileTree()
 
         # self.__ui.widget_picture.setLayout(layout)
 
@@ -50,23 +53,28 @@ class EC_MainWindow(QtWidgets.QMainWindow):
 
             try:
                 if not(file_tail in self._files_dict):
-                    dcm = pydicom.dcmread(f)
-                    tmp_ec_data = ECData(f,file_tail,dcm)
+                    # dcm = pydicom.dcmread(f)
+                    # tmp_ec_data = ECData(f,file_tail,dcm)
+                    self._file_tree.insertFile(f)
+
             except pydicom.errors.InvalidDicomError as e:
                 print(e)
                 self._error_file.append(file_tail)
-                if len(self._error_file)>=1:
-                    print(self._error_file)
-                    error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
-                    message = QMessageBox.critical(self,"Error",error_file,buttons=QMessageBox.StandardButton.Ok)
                     # message.showMessage(error_file)
             
-            else:
-                if not(file_tail in self._files_dict):
-                    self._files_dict[file_tail] = tmp_ec_data
-                    self.__ui.listWidget_file.addItem(file_tail)
+            # else:
+            #     self._file_tree.insertFile(f)
+                # if not(file_tail in self._files_dict):
+                #     self._files_dict[file_tail] = tmp_ec_data
+                    # self.__ui.listWidget_file.addItem(file_tail)
         # for idx, j in self._files_dict.items():
         #     print(idx,j.getPath())
+        if len(self._error_file)>=1:
+            print(self._error_file)
+            error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
+            message = QMessageBox.critical(self,"Error",error_file,buttons=QMessageBox.StandardButton.Ok)
+
+        print(self._file_tree.file_nodes)
 
     @pyqtSlot(bool)
     def on_actionOpen_file_open_triggered(self,checked):
