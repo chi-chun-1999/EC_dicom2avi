@@ -252,7 +252,10 @@ class FileTreeModel(AbstractTreeModel):
     def getNodeFromIndex(self,index, role=QtCore.Qt.ItemDataRole.DisplayRole):
         item = self.itemFromIndex(index)
         if role ==QtCore.Qt.ItemDataRole.DisplayRole:
-            return item.node
+            if item!=None:
+                return item.node
+            else:
+                return None
 
     def headerData(
         self,

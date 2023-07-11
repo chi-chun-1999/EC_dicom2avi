@@ -51,7 +51,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QTreeWidget" name="treeWidget_file"/>
+          <widget class="QTreeView" name="treeView_file"/>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,1,1">

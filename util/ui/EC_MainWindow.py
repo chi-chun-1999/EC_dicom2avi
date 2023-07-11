@@ -6,11 +6,12 @@ from EC_dicom2avi_ui import Ui_MainWindow
 from PyQt5.QtCore import pyqtSlot,QThread, pyqtSignal
 from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup, QMessageBox
 from src.ec_ui import ECData
-from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome,TableModel, SimpleDictModel
+from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome, SimpleDictModel,FileTreeModel
 from src.ec_ui.process_ui import StartExtractData, MultiThreadExtractData
 from src.file_tree.file_tree import FileTree
 import pydicom
 import pandas as pd
+import gc
 
 
 
@@ -73,8 +74,12 @@ class EC_MainWindow(QtWidgets.QMainWindow):
             print(self._error_file)
             error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
             message = QMessageBox.critical(self,"Error",error_file,buttons=QMessageBox.StandardButton.Ok)
+        
+        file_tree_model = FileTreeModel(self._file_tree)
+        self.__ui.treeView_file.setModel(file_tree_model)
+        self.__ui.treeView_file.expandAll()
 
-        print(self._file_tree.file_nodes)
+        # print(self._file_tree.file_nodes)
 
     @pyqtSlot(bool)
     def on_actionOpen_file_open_triggered(self,checked):
@@ -86,15 +91,26 @@ class EC_MainWindow(QtWidgets.QMainWindow):
     def on_pushButton_delete_file_released(self):
         #print(self.__ui.listWidget_file.currentItem())
         
-        if self.__ui.listWidget_file.currentItem()!=None:
-            del self._files_dict[self.__ui.listWidget_file.currentItem().text()]
-            delete_item = self.__ui.listWidget_file.takeItem(self.__ui.listWidget_file.currentRow())
-            del delete_item
-        else:
+
+        if self.__ui.treeView_file.model() !=None:
+            current_index = self.__ui.treeView_file.currentIndex()
+            current_node = self.__ui.treeView_file.model().getNodeFromIndex(current_index)
             
-            warning_str = 'Please select the file that will be deleted.'
+            if current_node:
             
-            message = QMessageBox.warning(self,"Error",warning_str,buttons=QMessageBox.StandardButton.Ok)
+                if current_node.is_leaf:
+                    self._file_tree.delFile(current_node)
+                    current_tree_view_model = self.__ui.treeView_file.model()
+                    del current_tree_view_model
+                    gc.collect()
+                    file_tree_model = FileTreeModel(self._file_tree)
+                    self.__ui.treeView_file.setModel(file_tree_model)
+                    self.__ui.treeView_file.expandAll()
+                    return
+
+        warning_str = 'Please select the file that will be deleted.'
+        
+        message = QMessageBox.warning(self,"Error",warning_str,buttons=QMessageBox.StandardButton.Ok)
             # message.showMessage(error_file)
 
     def on_pushButton_export_released(self):
