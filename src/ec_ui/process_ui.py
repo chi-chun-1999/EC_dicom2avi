@@ -45,7 +45,7 @@ class ExtractDataThread(QThread):
     # signal_extract_file = pyqtSignal(list)
     # signal_outcome = pyqtSignal(int,list,list)
     
-    def __init__(self,thread_num,split_file_dict:dict,export_root_path:str,export_data:str,export_whole=True,fps=30,parent=None):
+    def __init__(self,thread_num,split_file_dict:dict,export_root_path:str,export_data:str,export_whole=True,fps=30,parent=None,ocr_weight_path = '../config/template_number.npy'):
         QtCore.QThread.__init__(self, parent)
         self._split_file_dict =split_file_dict
         self._export_root_path = export_root_path
@@ -53,12 +53,14 @@ class ExtractDataThread(QThread):
         self._export_whole = export_whole
         self._fps = fps
         self._thread_num = thread_num
+        self._ocr_weight_path = ocr_weight_path
     
         self._three_dim_dicom_file = []
         self._extract_info = []
+
     def run(self):
         for key, f in self._split_file_dict.items():
-            extract_multi_cycle = ExtractMulitCycle(f.getPath())
+            extract_multi_cycle = ExtractMulitCycle(f.getPath(),ocr_weight_path=self._ocr_weight_path)
             print('=======Process %s======'%(extract_multi_cycle._file_name))
 
             try:
@@ -201,6 +203,7 @@ class UiExtractDataAbs(QtCore.QObject):
             self._export_root_path+='/'
         
         demc_info_file_path =  self._export_root_path+'demc_info.json'
+        # print('----------->',demc_info_file_path)
         with open(demc_info_file_path, 'w') as f:
           f.write(json.dumps(self._demc_info, indent = 4,cls=NumpyEncoder))
         
@@ -268,7 +271,7 @@ class OriExtractData(UiExtractDataAbs):
 
 # class MultiThreadExtractData(QtCore.QObject,metaclass=UiExtractDataAbs):
 class MultiThreadExtractData(UiExtractDataAbs):
-    def __init__(self, file_dict: dict, export_root_path: str, export_data: str, export_whole=True, fps=30,thread_num=3):
+    def __init__(self, file_dict: dict, export_root_path: str, export_data: str, export_whole=True, fps=30,thread_num=3,ocr_weight_path = '../config/template_number.npy'):
         
         # QtCore.QObject.__init__(self)
         super().__init__(file_dict, export_root_path, export_data, export_whole, fps)
@@ -276,11 +279,12 @@ class MultiThreadExtractData(UiExtractDataAbs):
         self._extract_data_threads=[]
         self._three_dim_dicom_file = []
         self._demc_info={}
+        self._ocr_weight_path = ocr_weight_path
         
         split_thread_files = self.splitFiles()
 
         for i in range(self._thread_num):
-            self._extract_data_threads.append(ExtractDataThread(i,split_thread_files[i],self._export_root_path,self._export_data,self._export_whole,self._fps))
+            self._extract_data_threads.append(ExtractDataThread(i,split_thread_files[i],self._export_root_path,self._export_data,self._export_whole,self._fps,ocr_weight_path=self._ocr_weight_path))
         
     def splitFiles(self):
         file_num = len(self._file_dict)
