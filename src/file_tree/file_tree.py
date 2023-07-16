@@ -212,9 +212,9 @@ class FileTree(object):
                 
                 if i ==len(path_list)-1:
                     current_path += path_list[i]
-                    dcm = pydicom.dcmread(file_path)
-                    node_data = ECData(file_path,path_list[i],dcm)
-                    # node_data = ECData(file_path,path_list[i],'test')
+                    # dcm = pydicom.dcmread(file_path)
+                    # node_data = ECData(file_path,path_list[i],dcm)
+                    node_data = ECData(file_path,path_list[i],'test')
                 
                 else:
                     current_path += path_list[i]+'/'
