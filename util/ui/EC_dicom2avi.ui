@@ -339,11 +339,23 @@
     </property>
     <addaction name="actionOpen_file_open"/>
    </widget>
+   <widget class="QMenu" name="menusettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="action_config"/>
+   </widget>
    <addaction name="menufile_file"/>
+   <addaction name="menusettings"/>
   </widget>
   <action name="actionOpen_file_open">
    <property name="text">
     <string>Open...</string>
+   </property>
+  </action>
+  <action name="action_config">
+   <property name="text">
+    <string>set config</string>
    </property>
   </action>
  </widget>

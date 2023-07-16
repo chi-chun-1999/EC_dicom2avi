@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup, QMessageBo
 from src.ec_ui import ECData
 from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome,TableModel, SimpleDictModel
 from src.ec_ui.process_ui import StartExtractData, MultiThreadExtractData
+from config_Window import ConfigWindow
 import pydicom
 import pandas as pd
 
@@ -23,6 +24,11 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self._files_dict = {}
         self._export_path = None
 
+        self._thread_num = 3
+        self._ocr_weight_path = '../config/template_number.npy'
+        self._config_window = ConfigWindow(self._thread_num,self._ocr_weight_path)
+        self._config_window._config_signal.connect(self.do_getConfig)
+        
         self._mpl_canvas = MplCanvas()
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self._mpl_canvas)
@@ -34,13 +40,21 @@ class EC_MainWindow(QtWidgets.QMainWindow):
 
         self._extract_outcome_signal.connect(self.do_showExtractOutcome)
 
+
         # self.__ui.widget_picture.setLayout(layout)
 
         #self.__ui.pushButton_file..connect(self.ec_func)
         #self.do_show()
+        self._config_dict = self._config_window.config_dict
+        # print(self._config_dict)
 
     def do_show(self):
         print(self.button_group.checkedId())
+    
+    @pyqtSlot(dict)
+    def do_getConfig(self,config_dict):
+        # print(config_dict)
+        self._config_dict = config_dict
 
     def addFile(self):
         self._error_file  = []
@@ -71,6 +85,10 @@ class EC_MainWindow(QtWidgets.QMainWindow):
     @pyqtSlot(bool)
     def on_actionOpen_file_open_triggered(self,checked):
         self.addFile()
+
+    @pyqtSlot(bool)
+    def on_action_config_triggered(self,checked):
+        self._config_window.show()
 
     def on_pushButton_add_file_released(self):
         self.addFile()
@@ -133,7 +151,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         export_data_dict = {1:'all',2:'avi',3:'npy',4:'None'}
         # demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
-        self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=3)
+        self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
         
         # for test below funciton will not export extract data
         # self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[4],thread_num=3)
@@ -151,6 +169,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         """
         self._data_extractor.threadWait()
         demc_info,three_dim_dicom_file = self._data_extractor.getOutcome()
+        self._data_extractor.exportDecmInfo()
         
         self._extract_outcome_signal.emit(demc_info,three_dim_dicom_file)
 
