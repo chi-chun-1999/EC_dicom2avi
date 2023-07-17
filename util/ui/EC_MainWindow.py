@@ -36,7 +36,6 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self.button_group.addButton(self.__ui.radioButton_all,1)
         self.button_group.addButton(self.__ui.radioButton_avi,2)
         self.button_group.addButton(self.__ui.radioButton_npy,3)
-        self.button_group.buttonClicked.connect(self.do_show)
 
         self._extract_outcome_signal.connect(self.do_showExtractOutcome)
 
@@ -51,8 +50,6 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self.__ui.progressBar.setValue(0)
         self.__ui.label_progress.setText('0%')
 
-    def do_show(self):
-        print(self.button_group.checkedId())
     
     @pyqtSlot(dict)
     def do_getConfig(self,config_dict):
@@ -161,10 +158,10 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         export_data_dict = {1:'all',2:'avi',3:'npy',4:'None'}
         # demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
-        # self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
+        self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
         
         # for test below funciton will not export extract data
-        self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[4],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
+        # self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[4],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
         
         self._data_extractor.signal_progress.connect(self.do_getProgress)
 
