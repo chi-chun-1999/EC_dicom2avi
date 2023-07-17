@@ -43,7 +43,7 @@ class ExtractDataThread(QThread):
     # Using signal to get data is too slow. Finally, I use the class method to get self variable.
     # signal_three_dim_file = pyqtSignal(list)
     # signal_extract_file = pyqtSignal(list)
-    # signal_outcome = pyqtSignal(int,list,list)
+    signal_finish = pyqtSignal(bool)
     
     def __init__(self,thread_num,split_file_dict:dict,export_root_path:str,export_data:str,export_whole=True,fps=30,parent=None,ocr_weight_path = '../config/template_number.npy'):
         QtCore.QThread.__init__(self, parent)
@@ -91,6 +91,8 @@ class ExtractDataThread(QThread):
                     extract_multi_cycle.exportAvi(self._export_root_path,fps=self._fps)
 
                 self._extract_info.append(extract_multi_cycle.exportExtractInfo())
+                
+            self.signal_finish.emit(1)
         
         # self._extract_info = [1,2,3,4,6]
         # self._three_dim_dicom_file = [1,2,3,14,6]
@@ -271,6 +273,7 @@ class OriExtractData(UiExtractDataAbs):
 
 # class MultiThreadExtractData(QtCore.QObject,metaclass=UiExtractDataAbs):
 class MultiThreadExtractData(UiExtractDataAbs):
+    signal_progress = pyqtSignal(float)
     def __init__(self, file_dict: dict, export_root_path: str, export_data: str, export_whole=True, fps=30,thread_num=3,ocr_weight_path = '../config/template_number.npy'):
         
         # QtCore.QObject.__init__(self)
@@ -282,9 +285,12 @@ class MultiThreadExtractData(UiExtractDataAbs):
         self._ocr_weight_path = ocr_weight_path
         
         split_thread_files = self.splitFiles()
+        
+        self._finish_file = 0
 
         for i in range(self._thread_num):
             self._extract_data_threads.append(ExtractDataThread(i,split_thread_files[i],self._export_root_path,self._export_data,self._export_whole,self._fps,ocr_weight_path=self._ocr_weight_path))
+        
         
     def splitFiles(self):
         file_num = len(self._file_dict)
@@ -307,6 +313,13 @@ class MultiThreadExtractData(UiExtractDataAbs):
         # print(split_thread_files)
         return split_thread_files
 
+    @pyqtSlot(bool)
+    def getTreadFinish(self,finish):
+        self._finish_file+=1
+
+        # print('process ---->',(self._finish_file)/len(self._file_dict)*100,'%')
+        
+        self.signal_progress.emit((self._finish_file)/len(self._file_dict)*100)
     
     def getOutcome(self):
         for thread in self._extract_data_threads:
@@ -328,6 +341,7 @@ class MultiThreadExtractData(UiExtractDataAbs):
         self._demc_info = {"process_time":process_time,"process_file_num":0,"process_file_info":[]}
 
         for i in range(len(self._extract_data_threads)):
+            self._extract_data_threads[i].signal_finish.connect(self.getTreadFinish)
             self._extract_data_threads[i].start()
 
 
