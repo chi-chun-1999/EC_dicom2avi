@@ -47,6 +47,9 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         #self.do_show()
         self._config_dict = self._config_window.config_dict
         # print(self._config_dict)
+        
+        self.__ui.progressBar.setValue(0)
+        self.__ui.label_progress.setText('0%')
 
     def do_show(self):
         print(self.button_group.checkedId())
@@ -55,6 +58,13 @@ class EC_MainWindow(QtWidgets.QMainWindow):
     def do_getConfig(self,config_dict):
         # print(config_dict)
         self._config_dict = config_dict
+    
+    @pyqtSlot(float)
+    def do_getProgress(self,progress):
+        # print('------------------>',progress,'%')
+        progress_text = str(int(progress))+'%'
+        self.__ui.progressBar.setValue(progress)
+        self.__ui.label_progress.setText(progress_text)
 
     def addFile(self):
         self._error_file  = []
@@ -151,10 +161,12 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         export_data_dict = {1:'all',2:'avi',3:'npy',4:'None'}
         # demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
-        self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
+        # self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
         
         # for test below funciton will not export extract data
-        # self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[4],thread_num=3)
+        self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[4],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
+        
+        self._data_extractor.signal_progress.connect(self.do_getProgress)
 
         self._data_extractor.startExtractData()
         
@@ -194,6 +206,10 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         
         # self._model = TableModel(data)
         self._model = SimpleDictModel(data_dict)
+        
+        # Set Progress to zero
+        self.__ui.progressBar.setValue(0)
+        self.__ui.label_progress.setText('0%')
 
 
         self.__ui.treeView_outcome.setModel(self._model)

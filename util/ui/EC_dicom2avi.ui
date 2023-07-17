@@ -21,7 +21,7 @@
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,2">
+   <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="2,5">
     <item>
      <widget class="QWidget" name="widget" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -90,7 +90,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,2,2,2,20">
+     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,2,2,0,2,20">
       <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
@@ -210,6 +210,31 @@
          <widget class="QPushButton" name="pushButton_start">
           <property name="text">
            <string>Start</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Progress:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="progressBar">
+          <property name="value">
+           <number>24</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_progress">
+          <property name="text">
+           <string>0%</string>
           </property>
          </widget>
         </item>
