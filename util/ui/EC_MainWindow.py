@@ -119,6 +119,9 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self._export_path = QFileDialog.getExistingDirectory(self)
         self.__ui.lineEdit_export_path.setText(self._export_path)
         
+        if self._export_path=="":
+            self._export_path=None
+        
     # def on_listWidget_file_itemDoubleClicked(self):
     #     select_file = self.__ui.listWidget_file.currentItem().text()
     #     select_num = self.__ui.listWidget_file.currentIndex().row()
@@ -189,7 +192,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
     @pyqtSlot(dict,list)
     def do_showExtractOutcome(self,demc_info,three_dim_dicom_file):
         if len(three_dim_dicom_file)!=0:
-            warning_str = str(three_dim_dicom_file)+' is(are) not 3 dimesion file(s), so it(they) will not be processed.'
+            warning_str = str(three_dim_dicom_file)+' is(are) not 4 dimesion file(s), so it(they) will not be processed.'
             message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
         # demc_info = {'process_time': 'Fri Jun 30 17:56:41 2023', 'process_file_num': 2, 'process_file_info': [{'Name': 'KBIHSQ00', 'R_wave_location': [(98, 52), (175, 52), (259, 52)], 'extract_frame': [22, 47, 75], 'unregular_rr_interval': False}, {'Name': 'KBIHSQO2', 'R_wave_location': [(32, 52), (109, 52), (186, 52), (263, 52)], 'extract_frame': [0, 25, 51, 76], 'unregular_rr_interval': False}]}
         # print(demc_info)
