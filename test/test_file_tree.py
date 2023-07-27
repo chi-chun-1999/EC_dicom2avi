@@ -29,8 +29,9 @@ print(d.path)
             
 #%%
 import os
-dir1_file_a = '/A/B/C/D/E/F/file_a'
-dir1_file_b = '/A/B/C/D/E/F/file_b'
+dir1_file_a = '/A1/B/C/D/E/F/file_a'
+dir1_file_b = '/A1/B/C/D/E/F/file_b'
+dir1_dirb_file_b = '/A1/B1/C/D/E/F/file_b'
 
 dir2_file_a = '/A/B/C/D/E/F1/file_a'
 dir2_file_b = '/A/B/C/D/E/F1/file_b'
@@ -38,6 +39,7 @@ dir2_file_b = '/A/B/C/D/E/F1/file_b'
 file_tree = FileTree()
 file_tree.insertFile(dir1_file_a)
 file_tree.insertFile(dir1_file_b)
+file_tree.insertFile(dir1_dirb_file_b)
 file_tree.insertFile(dir2_file_a)
 file_tree.insertFile(dir2_file_b)
 
@@ -52,11 +54,20 @@ print(file_nodes)
 
 
 # %%
-file_tree.delFile(file_nodes[-1])
-file_tree.delFile(file_nodes[-2])
+# file_tree.delFile(file_nodes[-1])
+# file_tree.delFile(file_nodes[-2])
 # file_tree.delFile(file_nodes[1])
 # file_tree.delFile(file_nodes[0])
+# print(file_tree.root.show())
+
+a1 = file_tree.root.children[0].children[0]
+file_tree.delDir(a1,a1.parent)
+
+# space_node = file_tree.root.children[0]
+# file_tree.delDir(space_node,space_node.parent)
+
 print(file_tree.root.show())
+print(file_tree.showRootNode())
 
 
 # %%

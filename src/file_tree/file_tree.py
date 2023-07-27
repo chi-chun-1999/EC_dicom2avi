@@ -267,7 +267,45 @@ class FileTree(object):
             msg = 'The input node is not file node.'
             raise FileTreeError(msg)
 
+    def delDir(self,dir_node,del_dir_parent):
+
+        if not dir_node.is_leaf:
+            # current_children = dir_node.children
+            # current_parent = dir_node
+            k = 0
+            for i in range(len(dir_node.children)):
+                self.delDir(dir_node.children[i-k],del_dir_parent)
+                # print('--->',dir_node.children[i-k])
+                del dir_node.children[i-k] 
+                k+=1
+            
+            # del dir_node
+            if dir_node in del_dir_parent.children:
+            
+                del_dir_parent_children = del_dir_parent.children
+                del_dir_parent.children = [child for child in del_dir_parent_children if child is not dir_node]
+                
+                del dir_node
+
+                while del_dir_parent.children==[] and del_dir_parent!=self.root:
+                    parent =del_dir_parent.parent
+                    parent_children = parent.children
+                    parent.children = [child for child in parent_children if child is not del_dir_parent]
+                    del del_dir_parent
+                    del_dir_parent = parent
+        
+        else:
+            # print(dir_node)
+            # del dir_node
+            return
+            
+
+
     def showRootNode(self):
+        """
+        當這個FileTree中由一個節點下的子節點有兩個以上，則使這個節點為現示的根節點(ShowRoot)
+        
+        """
         if len(self.root.children) == 0:
             return None
 
@@ -280,6 +318,4 @@ class FileTree(object):
                 show_root = show_root.children[0]
             
             return show_root
-        
-
         

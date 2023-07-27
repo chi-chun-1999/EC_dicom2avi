@@ -10,7 +10,7 @@ from typing import Type
 from image_process import getRgbArray
 from image_process import array2avi,avi2array
 
-data_path = '../../dataset/test/H/GEMS_IMG/2020_NOV/18/__174122/KBIHSR0C'
+data_path = '../../dataset/test/__174122/KBIHSR0C'
 video_name = './testmp4.mp4'
 fps = 30
 

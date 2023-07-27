@@ -6,25 +6,43 @@ import pydicom
 from image_process import *
 from src.image_process.frame import getRgbArray
 
+from src.encrypt.encrypt import *
+
 class ECData():
-    def __init__(self,file_path,file_name,dcm) -> None:
+    def __init__(self,file_path,file_name,dcm,encrypt=SHAEncrypt()) -> None:
         self._file_path = file_path
         self._file_name = file_name
         self._dcm = dcm
+        self._encryptor = encrypt
         
     def __str__(self) -> str:
         return self._file_name
 
     def loadData(self):
-        dcm = pydicom.read_file(self._file_path)
-        self._dcm_rgb_array =  getRgbArray(dcm)
+        # dcm = pydicom.read_file(self._file_path)
+        self._dcm_rgb_array =  getRgbArray(self._dcm)
     
     def getRgbArray(self):
+        self.loadData()
         return self._dcm_rgb_array
 
     def getPath(self):
         return self._file_path
     
+    @property
+    def dcm(self):
+        return self._dcm
+    
+    @property
+    def research_number(self):
+        patient_id = self._dcm.PatientID
+        self._research_number = self._encryptor.encrypt(patient_id)
+        return self._research_number
+    
+    @property
+    def file_date(self):
+        return self._dcm[0x0008,0x0020].value
+
     @property
     def file_name(self):
         return self._file_name
