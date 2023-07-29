@@ -15,6 +15,7 @@ import pydicom
 import pandas as pd
 import gc
 import re
+from src.ec_ui.export_ui import OutcomeTreeExportData
 
 
 
@@ -220,10 +221,12 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         export_data_dict = {1:'all',2:'avi',3:'npy',4:'None'}
         # demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
-        self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=3)
+        self._export_data_method = OutcomeTreeExportData(self._export_path) 
+        self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._export_data_method,export_data_dict[self.button_group.checkedId()],thread_num=3)
         
         # for test below funciton will not export extract data
-        # self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[4],thread_num=3)
+        # self._epxort_data_method = OutcomeTreeExportData(self._export_path) 
+        # self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._epxort_data_method,export_data_dict[4],thread_num=3)
 
         self._data_extractor.startExtractData()
         
@@ -255,11 +258,12 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self.__ui.lineEdit_process_time.setText( demc_info['process_time'])
         self.__ui.lineEdit_process_file_num.setText(str(demc_info['process_file_num']))
         
-        data = pd.DataFrame(demc_info['process_file_info'])
+        # data = pd.DataFrame(demc_info['process_patient_info'])
         
-        tmp = data.copy().set_index('Name')
-        data_dict = tmp.to_dict()
+        # tmp = data.copy().set_index('Name')
+        # data_dict = tmp.to_dict()
         
+        data_dict = demc_info['process_patient_info']
         # self._model = TableModel(data)
         self._model = SimpleDictModel(data_dict)
 

@@ -34,10 +34,14 @@ class ECData():
         return self._dcm
     
     @property
-    def research_number(self):
+    def research_id(self):
         patient_id = self._dcm.PatientID
         self._research_number = self._encryptor.encrypt(patient_id)
         return self._research_number
+    
+    @property
+    def patient_id(self):
+        return self._dcm.PatientID
     
     @property
     def file_date(self):

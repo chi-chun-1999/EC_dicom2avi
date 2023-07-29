@@ -11,7 +11,7 @@ import numpy as np
 import abc
 from PyQt5.QtCore import QThread,pyqtSignal,pyqtSlot
 from PyQt5 import QtCore
-
+from src.ec_ui.export_ui import ExportDataAbs
 
 class NumpyEncoder(json.JSONEncoder):
     """ Custom encoder for numpy data types """
@@ -45,10 +45,19 @@ class ExtractDataThread(QThread):
     # signal_extract_file = pyqtSignal(list)
     # signal_outcome = pyqtSignal(int,list,list)
     
-    def __init__(self,thread_num,split_file_dict:dict,export_root_path:str,export_data:str,export_whole=True,fps=30,parent=None):
+    def __init__(self,thread_num,split_file_dict:dict,export_data_method:ExportDataAbs,export_data:str,export_whole=True,fps=30,parent=None):
+    
+        """
+        thread_num: represents nth thread to extract data.
+        split_file_dict: the file dicts to be extracted in this thread.
+        export_data: represents exporting 'avi', 'npy', or 'both of them'.
+        export_data_method: the class(ExportDataAbs) to export processed files.
+        
+        """
+
         QtCore.QThread.__init__(self, parent)
         self._split_file_dict =split_file_dict
-        self._export_root_path = export_root_path
+        self._export_data_method = export_data_method
         self._export_data = export_data
         self._export_whole = export_whole
         self._fps = fps
@@ -58,8 +67,8 @@ class ExtractDataThread(QThread):
         self._extract_info = []
     def run(self):
         for key, f in self._split_file_dict.items():
-            extract_multi_cycle = ExtractMulitCycle(f.getPath())
-            print('=======Process %s======'%(extract_multi_cycle._file_name))
+            extract_multi_cycle = ExtractMulitCycle(f,self._export_data_method)
+            print('=======Process %s======'%(f.file_name))
 
             try:
                 extract_multi_cycle.extractCycle()
@@ -75,21 +84,21 @@ class ExtractDataThread(QThread):
 
                 if self._export_data=='all':
                     if self._export_whole:
-                        extract_multi_cycle.exportWholeNpy(self._export_root_path)
-                        extract_multi_cycle.exportWholeAvi(self._export_root_path,fps=self._fps)
-                    extract_multi_cycle.exportNpy(self._export_root_path)
-                    extract_multi_cycle.exportAvi(self._export_root_path,fps=self._fps)
+                        extract_multi_cycle.exportWholeNpy()
+                        extract_multi_cycle.exportWholeAvi(fps=self._fps)
+                    extract_multi_cycle.exportNpy()
+                    extract_multi_cycle.exportAvi(fps=self._fps)
                 elif self._export_data=='npy':
                     if self._export_whole:
-                        extract_multi_cycle.exportWholeNpy(self._export_root_path)
-                    extract_multi_cycle.exportNpy(self._export_root_path)
+                        extract_multi_cycle.exportWholeNpy()
+                    extract_multi_cycle.exportNpy()
                 elif self._export_data=='avi':
                     if self._export_whole:
-                        extract_multi_cycle.exportWholeAvi(self._export_root_path,fps=self._fps)
-                    extract_multi_cycle.exportAvi(self._export_root_path,fps=self._fps)
+                        extract_multi_cycle.exportWholeAvi(fps=self._fps)
+                    extract_multi_cycle.exportAvi(fps=self._fps)
 
                 self._extract_info.append(extract_multi_cycle.exportExtractInfo())
-        
+                # self._export_data_method.addProcessFile(f,extract_multi_cycle.exportExtractInfo())
         # self._extract_info = [1,2,3,4,6]
         # self._three_dim_dicom_file = [1,2,3,14,6]
         
@@ -128,7 +137,7 @@ def StartExtractData(file_dict:dict,export_path:str,export_data:str,export_whole
     fps = 30
     
     for key, f in file_dict.items():
-        extract_multi_cycle = ExtractMulitCycle(f.getPath())
+        extract_multi_cycle = ExtractMulitCycle(f)
         
         print('=======Process %s======'%(extract_multi_cycle._file_name))
 
@@ -174,7 +183,7 @@ def StartExtractData(file_dict:dict,export_path:str,export_data:str,export_whole
 
 
 class UiExtractDataAbs(QtCore.QObject):
-    def __init__(self,file_dict:dict,export_root_path:str,export_data:str,export_whole=True,fps=30):
+    def __init__(self,file_dict:dict,export_data_method:ExportDataAbs,export_data:str,export_whole=True,fps=30):
         """
         Using the origin method without multi thread to extract data
         input: 
@@ -187,7 +196,7 @@ class UiExtractDataAbs(QtCore.QObject):
         super().__init__()
         
         self._file_dict = file_dict
-        self._export_root_path = export_root_path
+        self._export_data_method = export_data_method
         self._export_data = export_data
         self._export_whole = export_whole
         self._fps = fps
@@ -206,12 +215,12 @@ class UiExtractDataAbs(QtCore.QObject):
         
     
 class OriExtractData(UiExtractDataAbs):
-    def __init__(self,file_dict:dict,export_root_path:str,export_data:str,export_whole=True,fps=30):
+    def __init__(self,file_dict:dict,export_root_path:ExportDataAbs,export_data:str,export_whole=True,fps=30):
         """
         Using the origin method without multi thread to extract data
         input: 
         file_dict: the python dictionary the key is file name and the content is ECData
-        export_path: the path to store extract data
+        export_data_method: the class(ExportDataAbs) to export processed files.
         export_data: 'all', 'avi', 'npy'
         export_whole: export all dicom array data
         fps: the fps for avi file
@@ -228,7 +237,7 @@ class OriExtractData(UiExtractDataAbs):
         self._demc_info = {"process_time":process_time,"process_file_num":0,"process_file_info":[]}
 
         for key, f in self._file_dict.items():
-            extract_multi_cycle = ExtractMulitCycle(f.getPath())
+            extract_multi_cycle = ExtractMulitCycle(f)
             
             print('=======Process %s======'%(extract_multi_cycle._file_name))
 
@@ -268,19 +277,26 @@ class OriExtractData(UiExtractDataAbs):
 
 # class MultiThreadExtractData(QtCore.QObject,metaclass=UiExtractDataAbs):
 class MultiThreadExtractData(UiExtractDataAbs):
-    def __init__(self, file_dict: dict, export_root_path: str, export_data: str, export_whole=True, fps=30,thread_num=3):
+    def __init__(self, file_dict: dict, export_data_method: ExportDataAbs, export_data: str, export_whole=True, fps=30,thread_num=3):
+        """
+        thread_num: represents nth thread to extract data.
+        split_file_dict: the file dicts to be extracted in this thread.
+        export_data: represents exporting 'avi', 'npy', or 'both of them'.
+        export_data_method: the class(ExportDataAbs) to export processed files.
+        
+        """
         
         # QtCore.QObject.__init__(self)
-        super().__init__(file_dict, export_root_path, export_data, export_whole, fps)
+        super().__init__(file_dict, export_data_method, export_data, export_whole, fps)
         self._thread_num  = thread_num
         self._extract_data_threads=[]
         self._three_dim_dicom_file = []
         self._demc_info={}
         
-        split_thread_files = self.splitFiles()
+        self._split_thread_files = self.splitFiles()
 
         for i in range(self._thread_num):
-            self._extract_data_threads.append(ExtractDataThread(i,split_thread_files[i],self._export_root_path,self._export_data,self._export_whole,self._fps))
+            self._extract_data_threads.append(ExtractDataThread(i,self._split_thread_files[i],self._export_data_method,self._export_data,self._export_whole,self._fps))
         
     def splitFiles(self):
         file_num = len(self._file_dict)
@@ -307,9 +323,18 @@ class MultiThreadExtractData(UiExtractDataAbs):
     def getOutcome(self):
         for thread in self._extract_data_threads:
             thread_num, demc_info, three_dim = thread.getOutcome()
-            self._demc_info['process_file_info'].extend(demc_info)
+            thread_files_list = list(self._split_thread_files[thread_num].values())
+            for i in range(len(demc_info)):
+
+                self._export_data_method.addProcessFile(thread_files_list[i],demc_info[i])
+
+            # self._demc_info['process_file_info'].extend(demc_info)
             self._three_dim_dicom_file.extend(three_dim)
             # self._test.extend(demc_info)
+            
+        # for i in self._demc_info['process']
+        
+        self._demc_info = self._export_data_method.exportDecmInfo()
         
         return self._demc_info,self._three_dim_dicom_file
 
@@ -321,7 +346,7 @@ class MultiThreadExtractData(UiExtractDataAbs):
 
         process_time = time.ctime()
         self._three_dim_dicom_file = []
-        self._demc_info = {"process_time":process_time,"process_file_num":0,"process_file_info":[]}
+        # self._demc_info = {"process_time":process_time,"process_file_num":0,"process_file_info":[]}
 
         for i in range(len(self._extract_data_threads)):
             self._extract_data_threads[i].start()

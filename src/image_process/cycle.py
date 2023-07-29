@@ -15,12 +15,15 @@ from src.image_process.ocr import HeartRateOCR, NumberOCR_Template
 from src.image_process.feature import RRIntervalExtractor
 from src.image_process.frame import getPixelMs
 from src.exception.value_exception import MultiCycleExtractError
+from src.ec_ui.ec_ui_data import ECData
+from src.ec_ui.export_ui import ExportDataAbs
 
 
 class CycleAbstract(abc.ABC):
-    def __init__(self,dicom_file_path) -> None:
+    def __init__(self,dicom_file_path,export_data_method:ExportDataAbs) -> None:
         self.setDicomFilePath(dicom_file_path)
         self._cycle_data = []
+        self._export_data_method = export_data_method
     
     def setDicomFilePath(self,dicom_file_path):
         self._dicom_file_path = dicom_file_path
@@ -49,64 +52,33 @@ class CycleAbstract(abc.ABC):
         if os.path.isdir(export_dir)==False:
             os.makedirs(export_dir)
     
-    def exportWholeNpy(self,export_dir=None):
-        if export_dir == None:
-            export_dir = './'+self._file_name+'/'
-            
-        else:
-            if export_dir[-1]!='/':
-                export_dir+='/'
-            export_dir+=self._file_name+'/'
-
-        self.createOutputDir(export_dir)
-        export_file_path = self._exportFilePath('npy',-1,export_dir)
+    def exportWholeNpy(self):
+        export_file_path = self._export_data_method.ECDataGetExportPath(self._ec_data,'npy',-1)
+        print(export_file_path)
         np.save(export_file_path,self._dcm_rgb_array)
 
-    def exportWholeAvi(self,export_dir=None,fps=30):
-        if export_dir == None:
-            export_dir = './'+self._file_name+'/'
-            
-        else:
-            if export_dir[-1]!='/':
-                export_dir+='/'
-            export_dir+=self._file_name+'/'
-
-        self.createOutputDir(export_dir)
-        export_file_path = self._exportFilePath('avi',-1,export_dir)
+    def exportWholeAvi(self,fps=30):
+        export_file_path = self._export_data_method.ECDataGetExportPath(self._ec_data,'avi',-1)
+        print(export_file_path)
         array2avi(self._dcm_rgb_array,export_file_path,fps=fps,numpy_channel=True)
 
         
 
-    def exportNpy(self,export_dir = None):
-        if export_dir == None:
-            export_dir = './'+self._file_name+'/npy/'
-            
-        else:
-            if export_dir[-1]!='/':
-                export_dir+='/'
-            export_dir+=self._file_name+'/npy/'
-
-        self.createOutputDir(export_dir)
+    def exportNpy(self):
                 
         for i in range(len(self._cycle_data)):
-            export_file_path = self._exportFilePath('npy',i,export_dir)
+            # export_file_path = self._exportFilePath('npy',i,export_dir)
+            export_file_path = self._export_data_method.ECDataGetExportPath(self._ec_data,'npy',i)
+            print(export_file_path)
             np.save(export_file_path,self._cycle_data[i])
 
-    def exportAvi(self,export_dir = None,fps = 30):
+    def exportAvi(self,fps = 30):
 
-        if export_dir == None:
-            export_dir = './'+self._file_name+'/avi/'
-            
-        else:
-            if export_dir[-1]!='/':
-                export_dir+='/'
-            export_dir+=self._file_name+'/avi/'
-
-        self.createOutputDir(export_dir)
-            
         for i in range(len(self._cycle_data)):
-            export_file_path = self._exportFilePath('avi',i,export_dir)
+            # export_file_path = self._exportFilePath('avi',i,export_dir)
             #print(export_file_path)
+            export_file_path = self._export_data_method.ECDataGetExportPath(self._ec_data,'avi',i)
+            print(export_file_path)
             
             array2avi(self._cycle_data[i],export_file_path,fps=fps,numpy_channel=True)
         
@@ -116,8 +88,14 @@ class CycleAbstract(abc.ABC):
         
             
 class ExtractMulitCycle(CycleAbstract):
-    def __init__(self, dicom_file_path,red_extractor = None,r_wave_extractor=None,ocr_weight_path='../config/template_number.npy') -> None:
-        super().__init__(dicom_file_path)
+    def __init__(self,ec_data:ECData,export_data_method,red_extractor = None,r_wave_extractor=None,ocr_weight_path='../config/template_number.npy') -> None:
+        # super().__init__(dicom_file_path)
+        
+        self._export_data_method = export_data_method
+        
+        self._ec_data = ec_data
+        self._cycle_data = []
+        self._file_name = ec_data.file_name
         
         if red_extractor ==None:
             self._red_extractor = RedExtractor()
@@ -141,7 +119,8 @@ class ExtractMulitCycle(CycleAbstract):
 
         self._unregualr_rr_interval = False
 
-        dcm = pydicom.read_file(self._dicom_file_path)
+        # dcm = pydicom.read_file(self._dicom_file_path)
+        dcm = self._ec_data.dcm
 
         if dcm.pixel_array.ndim!=4:
             input_dicom_dim = dcm.pixel_array.ndim
