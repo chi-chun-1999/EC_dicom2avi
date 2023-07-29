@@ -4,13 +4,19 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from PyQt5 import QtWidgets
 from EC_dicom2avi_ui import Ui_MainWindow
 from PyQt5.QtCore import pyqtSlot,QThread, pyqtSignal
-from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QErrorMessage, QButtonGroup, QMessageBox, QProgressDialog
+from PyQt5.QtGui import QFont
 from src.ec_ui import ECData
-from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome,TableModel, SimpleDictModel
+from src.ec_ui.show_ui import MplCanvas,ShowExtractOutcome, SimpleDictModel,FileTreeModel
 from src.ec_ui.process_ui import StartExtractData, MultiThreadExtractData
 from config_Window import ConfigWindow
+from src.file_tree.file_tree import FileTree
+from src.ec_ui.file_ui import *
 import pydicom
 import pandas as pd
+import gc
+import re
+from src.ec_ui.export_ui import OutcomeTreeExportData
 
 
 
@@ -21,7 +27,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         super().__init__(parent)
         self.__ui = Ui_MainWindow()
         self.__ui.setupUi(self)
-        self._files_dict = {}
+        self._process_data_dict = {}
         self._export_path = None
 
         self._thread_num = 3
@@ -38,6 +44,11 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self.button_group.addButton(self.__ui.radioButton_npy,3)
 
         self._extract_outcome_signal.connect(self.do_showExtractOutcome)
+        
+        self._file_tree = FileTree()
+        
+        self._import_file_thread = ImportFileThread()
+        self._import_file_thread.import_file_finish.connect(self.do_showImportFile)
 
 
         # self.__ui.widget_picture.setLayout(layout)
@@ -65,53 +76,115 @@ class EC_MainWindow(QtWidgets.QMainWindow):
 
     def addFile(self):
         self._error_file  = []
-        files_path = QFileDialog.getOpenFileNames(self)
-        for f in files_path[0]:
-            file_head, file_tail = os.path.split(f)
 
-            try:
-                if not(file_tail in self._files_dict):
-                    dcm = pydicom.dcmread(f)
-                    tmp_ec_data = ECData(f,file_tail,dcm)
-            except pydicom.errors.InvalidDicomError as e:
-                print(e)
-                self._error_file.append(file_tail)
-                if len(self._error_file)>=1:
-                    print(self._error_file)
-                    error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
-                    message = QMessageBox.critical(self,"Error",error_file,buttons=QMessageBox.StandardButton.Ok)
-                    # message.showMessage(error_file)
-            
-            else:
-                if not(file_tail in self._files_dict):
-                    self._files_dict[file_tail] = tmp_ec_data
-                    self.__ui.listWidget_file.addItem(file_tail)
-        # for idx, j in self._files_dict.items():
-        #     print(idx,j.getPath())
+        dir_path = QFileDialog.getExistingDirectory()
+        search_path = re.compile('\w+\/GEMS_IMG\/\d{4}_\w+\/\d+\/[_\w]+')
+        search_with_sub_file = re.compile('\.\w+')
+        search_with_dcm_sub_file = re.compile('^\w*.dcm')
+
+        for (dir_path, dir_names, file_names) in os.walk(dir_path):
+            # res.extend(file_names)
+            search_dir = search_path.search(dir_path)
+            if search_dir:
+                # print(search_dir)
+                for i in file_names:
+                    try:
+                        with_sub_file_name = search_with_sub_file.search(i)
+                        if not with_sub_file_name:
+                            dicom_file_path = dir_path+'/'+i
+                            self._file_tree.insertFile(dicom_file_path)
+                        
+                        else:
+                            with_dcm_sub_file = search_with_dcm_sub_file.search(i)
+                            if with_dcm_sub_file:
+                                dicom_file_path = dir_path+'/'+i
+                                self._file_tree.insertFile(dicom_file_path)
+                    except pydicom.errors.InvalidDicomError as e:
+                        print(e)
+                        file_head, file_tail = os.path.split(i)
+                        self._error_file.append(file_tail)
+
+
+        if len(self._error_file)>=1:
+            print(self._error_file)
+            error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
+            message = QMessageBox.critical(self,"Error",error_file,buttons=QMessageBox.StandardButton.Ok)
+        
+        # FileTreeModel is used to show the Import Data on the UI
+        file_tree_model = FileTreeModel(self._file_tree)
+        self.__ui.treeView_file.setModel(file_tree_model)
+        self.__ui.treeView_file.expandAll()
+
+        # print(self._file_tree.file_nodes)
 
     @pyqtSlot(bool)
     def on_actionOpen_file_open_triggered(self,checked):
-        self.addFile()
+        dir_path = QFileDialog.getExistingDirectory()
+        self._import_file_thread.getDirPath(dir_path)
+        # Using multi-thread to import file
+        self._import_file_thread.start()
+        
+        # Show the waiting Dialog
+        self._progress_dialog = QProgressDialog(self)
+        self._progress_dialog.setLabelText('Please Wait. Loading files... ')
+        self._progress_dialog.setMinimumDuration(0)
+        self._progress_dialog.setRange(0,0)
+        self._progress_dialog.setCancelButton(None)
+        self._progress_dialog.show()
+
+        
+        
 
     @pyqtSlot(bool)
     def on_action_config_triggered(self,checked):
         self._config_window.show()
 
     def on_pushButton_add_file_released(self):
-        self.addFile()
-    
+        dir_path = QFileDialog.getExistingDirectory()
+        self._import_file_thread.getDirPath(dir_path)
+        # Using multi-thread to import file
+        self._import_file_thread.start() 
+
+        # Show the waiting Dialog
+        self._progress_dialog = QProgressDialog(self)
+        self._progress_dialog.setLabelText('Please Wait. Loading files... ')
+        self._progress_dialog.setMinimumDuration(0)
+        self._progress_dialog.setRange(0,0)
+        self._progress_dialog.setCancelButton(None)
+        self._progress_dialog.show()
+
     def on_pushButton_delete_file_released(self):
         #print(self.__ui.listWidget_file.currentItem())
         
-        if self.__ui.listWidget_file.currentItem()!=None:
-            del self._files_dict[self.__ui.listWidget_file.currentItem().text()]
-            delete_item = self.__ui.listWidget_file.takeItem(self.__ui.listWidget_file.currentRow())
-            del delete_item
-        else:
+
+        if self.__ui.treeView_file.model() !=None:
+            current_index = self.__ui.treeView_file.currentIndex()
+            current_node = self.__ui.treeView_file.model().getNodeFromIndex(current_index)
             
-            warning_str = 'Please select the file that will be deleted.'
+            if current_node:
             
-            message = QMessageBox.warning(self,"Error",warning_str,buttons=QMessageBox.StandardButton.Ok)
+                if current_node.is_leaf:
+                    self._file_tree.delFile(current_node)
+                    current_tree_view_model = self.__ui.treeView_file.model()
+                    del current_tree_view_model
+                    gc.collect()
+                    file_tree_model = FileTreeModel(self._file_tree)
+                    self.__ui.treeView_file.setModel(file_tree_model)
+                    self.__ui.treeView_file.expandAll()
+                    return
+                else:
+                    self._file_tree.delDir(current_node,current_node.parent)
+                    current_tree_view_model = self.__ui.treeView_file.model()
+                    del current_tree_view_model
+                    gc.collect()
+                    file_tree_model = FileTreeModel(self._file_tree)
+                    self.__ui.treeView_file.setModel(file_tree_model)
+                    self.__ui.treeView_file.expandAll()
+                    return
+
+        warning_str = 'Please select the file or directory that will be deleted.'
+        
+        message = QMessageBox.warning(self,"Error",warning_str,buttons=QMessageBox.StandardButton.Ok)
             # message.showMessage(error_file)
 
     def on_pushButton_export_released(self):
@@ -142,13 +215,28 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         Using the MultiThreadExtractData to extract data. And the relative varaiable is self._data_extractor. Due to using multi thread, the function of showing TreeView must also be thread.
         
         """
+        """
+        TODO:  我這裡不是使用 self._files_dict 來儲存資料，而是使用 self._file_tree，所以需要進行修改
+        我多了一個 FileProcessData 來取得 self._files_dict 這樣一來可以避免重新更改ExtractDataThread 的介面
+        
 
-        if len(self._files_dict)==0 and self._export_path==None:
+        
+        """
+        
+        process_data_extractor = FileTreeProcessData(self._file_tree)
+
+        
+        self._process_data_dict = process_data_extractor.getProcessData()
+        # print(self._process_data_dict)
+        
+        
+
+        if len(self._process_data_dict)==0 and self._export_path==None:
             warning_str = 'Please open the file(s) that will be processed and select the path to store the exported file(s). '
             message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
             return
 
-        elif len(self._files_dict)==0:
+        elif len(self._process_data_dict)==0:
             warning_str = 'Please open the file(s) that will be processed.'
             message = QMessageBox.warning(self,"Warning",warning_str,buttons=QMessageBox.StandardButton.Ok)
             return
@@ -161,11 +249,13 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         export_data_dict = {1:'all',2:'avi',3:'npy',4:'None'}
         # demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
-        self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
+        
+        self._export_data_method = OutcomeTreeExportData(self._export_path) 
+        self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._export_data_method,export_data_dict[self.button_group.checkedId()],thread_num=3)
         
         # for test below funciton will not export extract data
-        # self._data_extractor = MultiThreadExtractData(self._files_dict,self._export_path,export_data_dict[4],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
-        
+        # self._epxort_data_method = OutcomeTreeExportData(self._export_path) 
+        # self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._epxort_data_method,export_data_dict[4],thread_num=3)
         self._data_extractor.signal_progress.connect(self.do_getProgress)
 
         self._data_extractor.startExtractData()
@@ -181,7 +271,8 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         """
         self._data_extractor.threadWait()
         demc_info,three_dim_dicom_file = self._data_extractor.getOutcome()
-        self._data_extractor.exportDecmInfo()
+        # self._data_extractor.exportDecmInfo()
+        self._export_data_method.exportDecmInfo()
         
         self._extract_outcome_signal.emit(demc_info,three_dim_dicom_file)
 
@@ -199,11 +290,12 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self.__ui.lineEdit_process_time.setText( demc_info['process_time'])
         self.__ui.lineEdit_process_file_num.setText(str(demc_info['process_file_num']))
         
-        data = pd.DataFrame(demc_info['process_file_info'])
+        # data = pd.DataFrame(demc_info['process_patient_info'])
         
-        tmp = data.copy().set_index('Name')
-        data_dict = tmp.to_dict()
+        # tmp = data.copy().set_index('Name')
+        # data_dict = tmp.to_dict()
         
+        data_dict = demc_info['process_patient_info']
         # self._model = TableModel(data)
         self._model = SimpleDictModel(data_dict)
         
@@ -214,8 +306,80 @@ class EC_MainWindow(QtWidgets.QMainWindow):
 
         self.__ui.treeView_outcome.setModel(self._model)
         self.__ui.pushButton_start.setEnabled(True)
-        
+    
+    @pyqtSlot(FileTree)
+    def do_showImportFile(self,file_tree):
+        self._file_tree = file_tree
+        # print(self._file_tree.root.height)
+        file_tree_model = FileTreeModel(self._file_tree)
+        self.__ui.treeView_file.setModel(file_tree_model)
+        self.__ui.treeView_file.expandAll()
+        self._progress_dialog.close()
+        if self._file_tree.root.height==0:
+            warning_str = 'Please select the directory with the file structure similar to <font style="color: red;">\'Echo Strain\'</font> below.\
+            <pre>\
+Echo Strain/<br>\
+├─ Strain 1/ <br>\
+│  ├─ GEMS_IMG/<br>\
+│  │  ├─ 2009_SEP/<br>\
+│  │  │  ├─ 23/<br>\
+│  │  │  │  ├─ 152534/<br>\
+│  │  │  │  │  ├─ 99NFGTPC<br>\
+├─ Strain 2/<br>\
+│  ├─ GEMS_IMG/<br>\
+│  │  ├─ 2019_DEC/<br>\
+│  │  │  ├─ 19/<br>\
+│  │  │  │  ├─ 162664/<br>\
+│  │  │  │  │  ├─ 90ADGDV3<br>\
+</pre>'
+            message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
 
+
+class ImportFileThread(QThread):
+    import_file_finish = pyqtSignal(FileTree)
+    def __init__(self,parent=None):
+        QThread.__init__(self,parent)
+    def getDirPath(self,dir_path):
+        self._dir_path = dir_path
+
+    def run(self):
+        self._error_file  = []
+        file_tree = FileTree()
+
+        # dir_path = QFileDialog.getExistingDirectory()
+        search_path = re.compile('\w+\/GEMS_IMG\/\d{4}_\w+\/\d+\/[_\w]+')
+        search_with_sub_file = re.compile('\.\w+')
+        search_with_dcm_sub_file = re.compile('^\w*.dcm')
+
+        for (dir_path, dir_names, file_names) in os.walk(self._dir_path):
+            # res.extend(file_names)
+            search_dir = search_path.search(dir_path)
+            if search_dir:
+                # print(search_dir)
+                for i in file_names:
+                    try:
+                        with_sub_file_name = search_with_sub_file.search(i)
+                        if not with_sub_file_name:
+                            dicom_file_path = dir_path+'/'+i
+                            file_tree.insertFile(dicom_file_path)
+                        
+                        else:
+                            with_dcm_sub_file = search_with_dcm_sub_file.search(i)
+                            if with_dcm_sub_file:
+                                dicom_file_path = dir_path+'/'+i
+                                file_tree.insertFile(dicom_file_path)
+                    except pydicom.errors.InvalidDicomError as e:
+                        print(e)
+                        file_head, file_tail = os.path.split(i)
+                        self._error_file.append(file_tail)
+
+        if len(self._error_file)>=1:
+            print(self._error_file)
+            error_file=str(self._error_file)+' is(are) NOT the DICOM file(s). Please select DICOM file.'
+            message = QMessageBox.critical(self,"Error",error_file,buttons=QMessageBox.StandardButton.Ok)
+        
+        
+        self.import_file_finish.emit(file_tree)
         
         
 

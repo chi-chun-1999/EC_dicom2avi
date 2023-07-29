@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import numpy as np
+import contextlib
 
 class MplCanvas(FigureCanvasQTAgg):
 
@@ -60,32 +61,6 @@ class TreeItem:
         child = self.__class__(node, _parent=self)
         self._childs.append(child)
         return child  
-class TableModel(QtCore.QAbstractTableModel):
-
-    def __init__(self, data):
-        super(TableModel, self).__init__()
-        self._data = data
-
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            value = self._data.iloc[index.row(), index.column()]
-            return str(value)
-
-    def rowCount(self, index):
-        return self._data.shape[0]
-
-    def columnCount(self, index):
-        return self._data.shape[1]
-
-    def headerData(self, section, orientation, role):
-        # section is the index of the column/row.
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Vertical:
-                return str(self._data.index[section])
-            
 
 
 class AbstractTreeModel(QtCore.QAbstractItemModel):
@@ -253,3 +228,76 @@ def iter_children(data: Any):
 
     for x in iter_func(data):
         yield x
+
+
+@contextlib.contextmanager
+def layoutChange(model: AbstractTreeModel):
+    try:
+        model.layoutAboutToBeChanged.emit()
+        yield
+    finally:
+        model.layoutChanged.emit() 
+
+class FileTreeModel(AbstractTreeModel):
+    def __post_init__(self,file_tree:FileTree):
+        self.rootItem =TreeItem(file_tree.showRootNode())
+        # print(self.rootItem.node.name)
+        self.fetchMore(self.indexFromItem(self.rootItem))
+
+    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+        item = self.itemFromIndex(index)
+        # print(item.node)
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            return item.node.name
+    def getNodeFromIndex(self,index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+        item = self.itemFromIndex(index)
+        if role ==QtCore.Qt.ItemDataRole.DisplayRole:
+            if item!=None:
+                return item.node
+            else:
+                return None
+
+    def headerData(
+        self,
+        section: int,
+        orientation: QtCore.Qt.Orientation,
+        role=QtCore.Qt.ItemDataRole.DisplayRole,
+    ) -> Any:
+        assert orientation == QtCore.Qt.Orientation.Horizontal
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if section == 0:
+                return "Name"
+        return super().headerData(section, orientation, role)
+    def rowCount(self, index=QtCore.QModelIndex()):
+        if not self.canFetchMore(index):
+            # print('***************')
+            return super().rowCount(index)
+        item = self.itemFromIndex(index)
+        # print('-------------',item.node.children)
+        if not(item.node.is_leaf):
+            try:
+                return len(item.node.children)
+            except PermissionError:
+                return 0
+        else:
+            return 0
+
+    def canFetchMore(self, parent: QtCore.QModelIndex) -> bool:
+        if not parent.isValid():
+            return False
+        item = self.itemFromIndex(parent)
+        # print('-------------',item)
+        if item is None:
+            return False
+        return item.childCount() == 0 and not(item.node.is_leaf)
+
+    def fetchMore(self, parent: QtCore.QModelIndex) -> None:
+        parent_item = self.itemFromIndex(parent)
+        
+        if parent_item.node!=None:
+            children_node = parent_item.node.children
+            with layoutChange(self):
+                self.beginInsertRows(parent, 0, len(children_node))
+                for c in children_node:
+                    parent_item.addChild(c)
+                self.endInsertRows()

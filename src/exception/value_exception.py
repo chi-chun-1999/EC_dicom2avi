@@ -26,3 +26,10 @@ class MultiCycleExtractError(DataNotMatchError):
     def __init__(self, message, file_name):
         message = f'{file_name} Multi Cycle extract Error'
         super().__init__(message)
+
+
+
+class FileTreeError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+    
