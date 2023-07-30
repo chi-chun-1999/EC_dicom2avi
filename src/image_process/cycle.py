@@ -120,7 +120,7 @@ class ExtractMulitCycle(CycleAbstract):
         self._unregualr_rr_interval = False
 
         # dcm = pydicom.read_file(self._dicom_file_path)
-        dcm = self._ec_data.dcm
+        dcm = self._ec_data.loadData()
 
         if dcm.pixel_array.ndim!=4:
             input_dicom_dim = dcm.pixel_array.ndim
