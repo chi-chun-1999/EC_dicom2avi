@@ -342,7 +342,7 @@ class MultiThreadExtractData(UiExtractDataAbs):
             thread_files_list = list(self._split_thread_files[thread_num].values())
             for i in range(len(demc_info)):
 
-                self._export_data_method.addProcessFile(thread_files_list[i],demc_info[i])
+                self._export_data_method.addProcessFile(demc_info[i]['ECData'],demc_info[i])
 
             # self._demc_info['process_file_info'].extend(demc_info)
             self._three_dim_dicom_file.extend(three_dim)

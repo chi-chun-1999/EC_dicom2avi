@@ -54,7 +54,7 @@ class CycleAbstract(abc.ABC):
     
     def exportWholeNpy(self):
         export_file_path = self._export_data_method.ECDataGetExportPath(self._ec_data,'npy',-1)
-        print(export_file_path)
+        # print(export_file_path)
         np.save(export_file_path,self._dcm_rgb_array)
 
     def exportWholeAvi(self,fps=30):
@@ -69,7 +69,7 @@ class CycleAbstract(abc.ABC):
         for i in range(len(self._cycle_data)):
             # export_file_path = self._exportFilePath('npy',i,export_dir)
             export_file_path = self._export_data_method.ECDataGetExportPath(self._ec_data,'npy',i)
-            print(export_file_path)
+            # print(export_file_path)
             np.save(export_file_path,self._cycle_data[i])
 
     def exportAvi(self,fps = 30):
@@ -78,7 +78,7 @@ class CycleAbstract(abc.ABC):
             # export_file_path = self._exportFilePath('avi',i,export_dir)
             #print(export_file_path)
             export_file_path = self._export_data_method.ECDataGetExportPath(self._ec_data,'avi',i)
-            print(export_file_path)
+            # print(export_file_path)
             
             array2avi(self._cycle_data[i],export_file_path,fps=fps,numpy_channel=True)
         
@@ -220,6 +220,7 @@ class ExtractMulitCycle(CycleAbstract):
 
         self._extract_info = {}
         self._extract_info['Name'] = self._file_name
+        self._extract_info['ECData'] = self._ec_data
         self._extract_info['R_wave_location'] = r_wave_location_dict
         self._extract_info['extract_frame'] = self._match_frame
         self._extract_info['unregular_rr_interval'] = self._unregualr_rr_interval

@@ -78,7 +78,8 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self._error_file  = []
 
         dir_path = QFileDialog.getExistingDirectory()
-        search_path = re.compile('\w+\/GEMS_IMG\/\d{4}_\w+\/\d+\/[_\w]+')
+        print(dir_path)
+        search_path = re.compile('\w+\\GEMS_IMG\\\d{4}_\w+\\\d+\\[_\w]+')
         search_with_sub_file = re.compile('\.\w+')
         search_with_dcm_sub_file = re.compile('^\w*.dcm')
 
@@ -251,7 +252,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         
         
         self._export_data_method = OutcomeTreeExportData(self._export_path) 
-        self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._export_data_method,export_data_dict[self.button_group.checkedId()],thread_num=3)
+        self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._export_data_method,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
         
         # for test below funciton will not export extract data
         # self._epxort_data_method = OutcomeTreeExportData(self._export_path) 
@@ -284,7 +285,9 @@ class EC_MainWindow(QtWidgets.QMainWindow):
     def do_showExtractOutcome(self,demc_info,three_dim_dicom_file):
         if len(three_dim_dicom_file)!=0:
             warning_str = str(three_dim_dicom_file)+' is(are) not 4 dimesion file(s), so it(they) will not be processed.'
-            message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
+            # message = QMessageBox.warning(self,"Wanrning",warning_str,buttons=QMessageBox.StandardButton.Ok)
+            message = QErrorMessage(self)
+            message.showMessage(warning_str)
         # demc_info = {'process_time': 'Fri Jun 30 17:56:41 2023', 'process_file_num': 2, 'process_file_info': [{'Name': 'KBIHSQ00', 'R_wave_location': [(98, 52), (175, 52), (259, 52)], 'extract_frame': [22, 47, 75], 'unregular_rr_interval': False}, {'Name': 'KBIHSQO2', 'R_wave_location': [(32, 52), (109, 52), (186, 52), (263, 52)], 'extract_frame': [0, 25, 51, 76], 'unregular_rr_interval': False}]}
         # print(demc_info)
         self.__ui.lineEdit_process_time.setText( demc_info['process_time'])
@@ -347,7 +350,11 @@ class ImportFileThread(QThread):
         file_tree = FileTree()
 
         # dir_path = QFileDialog.getExistingDirectory()
-        search_path = re.compile('\w+\/GEMS_IMG\/\d{4}_\w+\/\d+\/[_\w]+')
+        if sys.platform == 'win32':
+            search_path = re.compile(r'\w+\\GEMS_IMG\\\d{4}_\w+\\\d+\\[_\w]+')
+        else:
+            search_path = re.compile(r'\w+\/GEMS_IMG\/\d{4}_\w+\/\d+\/[_\w]+')
+            
         search_with_sub_file = re.compile('\.\w+')
         search_with_dcm_sub_file = re.compile('^\w*.dcm')
 
@@ -360,13 +367,23 @@ class ImportFileThread(QThread):
                     try:
                         with_sub_file_name = search_with_sub_file.search(i)
                         if not with_sub_file_name:
-                            dicom_file_path = dir_path+'/'+i
+                            if sys.platform == 'win32':
+                                dicom_file_path = dir_path+'\\'+i
+                            else:
+                                dicom_file_path = dir_path+'\/'+i
+                                
                             file_tree.insertFile(dicom_file_path)
                         
                         else:
                             with_dcm_sub_file = search_with_dcm_sub_file.search(i)
                             if with_dcm_sub_file:
-                                dicom_file_path = dir_path+'/'+i
+                                
+                                if sys.platform == 'win32':
+                                    dicom_file_path = dir_path+'\\'+i
+                                
+                                else:
+                                    dicom_file_path = dir_path+'\/'+i
+
                                 file_tree.insertFile(dicom_file_path)
                     except pydicom.errors.InvalidDicomError as e:
                         print(e)
