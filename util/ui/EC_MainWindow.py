@@ -370,7 +370,7 @@ class ImportFileThread(QThread):
                             if sys.platform == 'win32':
                                 dicom_file_path = dir_path+'\\'+i
                             else:
-                                dicom_file_path = dir_path+'\/'+i
+                                dicom_file_path = dir_path+'/'+i
                                 
                             file_tree.insertFile(dicom_file_path)
                         
@@ -382,7 +382,7 @@ class ImportFileThread(QThread):
                                     dicom_file_path = dir_path+'\\'+i
                                 
                                 else:
-                                    dicom_file_path = dir_path+'\/'+i
+                                    dicom_file_path = dir_path+'/'+i
 
                                 file_tree.insertFile(dicom_file_path)
                     except pydicom.errors.InvalidDicomError as e:
