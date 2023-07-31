@@ -1,6 +1,7 @@
 import os 
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 from PyQt5 import QtWidgets
 from EC_dicom2avi_ui import Ui_MainWindow
 from PyQt5.QtCore import pyqtSlot,QThread, pyqtSignal
@@ -31,7 +32,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self._export_path = None
 
         self._thread_num = 3
-        self._ocr_weight_path = '../config/template_number.npy'
+        self._ocr_weight_path = './config/template_number.npy'
         self._config_window = ConfigWindow(self._thread_num,self._ocr_weight_path)
         self._config_window._config_signal.connect(self.do_getConfig)
         
