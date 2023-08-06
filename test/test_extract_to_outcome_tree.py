@@ -88,7 +88,8 @@ class TestMultiCycleAndOutcomeTree(TestCase):
             self.extract_multi_cycle.exportNpy()
             self.extract_multi_cycle.exportWholeAvi()
             self.extract_multi_cycle.exportWholeNpy()
-            self.export_data.exportDecmInfo()
+            # self.export_data.exportDecmInfo()
+        print(self.export_data.to_data_frame())
             
             # export_path = self.export_data.ECDataGetExportPath(e,'npy',-1)
             

@@ -13,6 +13,7 @@ from src.file_tree.file_tree import PreOrderIter
 import json
 import abc
 import time
+import pandas as pd
 
 class NumpyEncoder(json.JSONEncoder):
     """ Custom encoder for numpy data types """
@@ -244,6 +245,10 @@ class ExportDataAbs(abc.ABC):
     @abc.abstractmethod
     def to_dict(self):
         pass
+    
+    @abc.abstractmethod
+    def to_data_frame(self):
+        pass
 
     @abc.abstractmethod
     def addProcessFile(self,ec_data:ECData,export_extract_info:dict):
@@ -255,16 +260,20 @@ class ExportDataAbs(abc.ABC):
         pass
     
     def exportDecmInfo(self):
-        demc_info = self.to_dict()
+        demc_info_dict = self.to_dict()
+        demc_info_df = self.to_data_frame()
 
         if self._export_root_path[-1]!='/':
             self._export_root_path+='/'
         
         demc_info_file_path =  self._export_root_path+'demc_info.json'
         with open(demc_info_file_path, 'w') as f:
-          f.write(json.dumps(demc_info, indent = 4,cls=NumpyEncoder))
+          f.write(json.dumps(demc_info_dict, indent = 4,cls=NumpyEncoder))
+        
+        demc_info_df_file_path =  self._export_root_path+'demc_info.xlsx'
+        demc_info_df.to_excel(demc_info_df_file_path)
           
-        return demc_info
+        return demc_info_dict
 
 
 class OutcomeTreeExportData(ExportDataAbs):
@@ -318,6 +327,42 @@ class OutcomeTreeExportData(ExportDataAbs):
                 
         return demc_info
     
+    def to_data_frame(self):
+        f = lambda node: node.depth==4
+        stop = lambda node: node.name=="patient_id" or node.name=="research_id" or node.name == "date"
+        file_nodes = [i for i in PreOrderIter(self._outcome_tree._root,filter_=f,stop=stop)]
+
+        patient_files = {'patient_id':[],'research_id':[],'date_info':[],'file_name':[],'r_wave_location':[],'extract_frame':[],'unregular_rr_interval':[]}
+
+        for fn in file_nodes:
+
+            patient_info_node = fn.parent.parent
+            patient_id = patient_info_node.children[0].children[0].data
+            research_id = patient_info_node.children[1].children[0].data
+            date_info = patient_info_node.children[2].children[0].children[0].data
+
+
+            file_name = fn.children[0].children[0].data
+            r_wave_location = fn.children[1].children[0].data
+            extract_frame = fn.children[2].children[0].data
+            unregular_rr_interval = fn.children[3].children[0].data
+            
+# process_file = {'patient_id': '0458924','research_id': 'r12d43d','date_info':'2012-12-18','file_name':'HE4K489Y','R_wave_location': [(98, 52), (175, 52), (259, 52)],'extract_frame': [22, 47, 75],'unregular_rr_interval': False,'export_path':'/home/hello/a'}
+            # print(patient_id,research_id,date_info,file_name,r_wave_location,extract_frame,unregular_rr_interval)
+            patient_files['patient_id'].append(patient_id)
+            patient_files['research_id'].append(research_id)
+            patient_files['file_name'].append(file_name)
+            patient_files['date_info'].append(date_info)
+            patient_files['r_wave_location'].append(r_wave_location)
+            patient_files['extract_frame'].append(extract_frame)
+            patient_files['unregular_rr_interval'].append(unregular_rr_interval)
+            # patient_file = {'patient_id':patient_id,'research_id':research_id,'date_info':date_info,'file_name':file_name,'r_wave_location':r_wave_location,'extract_frame':extract_frame,'unregular_rr_interval':unregular_rr_interval}
+
+        df = pd.DataFrame(patient_files)
+        return df
+
+    
+    
     def addProcessFile(self,ec_data: ECData, export_extract_info: dict):
         
         process_file = {}
@@ -343,10 +388,18 @@ class OutcomeTreeExportData(ExportDataAbs):
             
         
         if idx != -1:
-            export_dir = "%s%s/%s/"%(self._export_root_path,ec_data.research_id,file_name_extension)
+            # without date_dir 
+            # export_dir = "%s%s/%s/"%(self._export_root_path,ec_data.research_id,file_name_extension)
+
+            # with date_dir 
+            export_dir = "%s%s/%s/%s/"%(self._export_root_path,ec_data.research_id,ec_data.file_date,file_name_extension)
         
         else:
-            export_dir = "%s%s/whole_%s/"%(self._export_root_path,ec_data.research_id,file_name_extension)
+            # without date_dir 
+            # export_dir = "%s%s/whole_%s/"%(self._export_root_path,ec_data.research_id,file_name_extension)
+
+            # with date_dir 
+            export_dir = "%s%s/%s/whole_%s/"%(self._export_root_path,ec_data.research_id,ec_data.file_date,file_name_extension)
             
         
         self.createOutputDir(export_dir)
@@ -354,10 +407,18 @@ class OutcomeTreeExportData(ExportDataAbs):
         file_name=""
         
         if idx != -1:
-            file_name = "%s_%s_%d.%s"%(ec_data.file_date,ec_data.file_name,idx,file_name_extension)
+            # without date
+            file_name = "%s_%d.%s"%(ec_data.file_name,idx,file_name_extension)
+
+            # with date
+            # file_name = "%s_%s_%d.%s"%(ec_data.file_date,ec_data.file_name,idx,file_name_extension)
         
         else:
-            file_name = "%s_%s_whole.%s"%(ec_data.file_date,ec_data.file_name,file_name_extension)
+            # without date
+            file_name = "%s_whole.%s"%(ec_data.file_name,file_name_extension)
+
+            # with date
+            # file_name = "%s_%s_whole.%s"%(ec_data.file_date,ec_data.file_name,file_name_extension)
         
         
         export_path = "%s%s"%(export_dir,file_name)

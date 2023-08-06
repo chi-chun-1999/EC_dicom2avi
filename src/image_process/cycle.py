@@ -59,7 +59,7 @@ class CycleAbstract(abc.ABC):
 
     def exportWholeAvi(self,fps=30):
         export_file_path = self._export_data_method.ECDataGetExportPath(self._ec_data,'avi',-1)
-        print(export_file_path)
+        # print(export_file_path)
         array2avi(self._dcm_rgb_array,export_file_path,fps=fps,numpy_channel=True)
 
         

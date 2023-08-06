@@ -350,9 +350,9 @@ class MultiThreadExtractData(UiExtractDataAbs):
             
         # for i in self._demc_info['process']
         
-        self._demc_info = self._export_data_method.exportDecmInfo()
+        self._demc_info_dict = self._export_data_method.exportDecmInfo()
         
-        return self._demc_info,self._three_dim_dicom_file
+        return self._demc_info_dict,self._three_dim_dicom_file
 
     def threadWait(self):
         for thread in self._extract_data_threads:

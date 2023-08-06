@@ -272,11 +272,11 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         """
         """
         self._data_extractor.threadWait()
-        demc_info,three_dim_dicom_file = self._data_extractor.getOutcome()
+        demc_info_dict,three_dim_dicom_file = self._data_extractor.getOutcome()
         # self._data_extractor.exportDecmInfo()
         self._export_data_method.exportDecmInfo()
         
-        self._extract_outcome_signal.emit(demc_info,three_dim_dicom_file)
+        self._extract_outcome_signal.emit(demc_info_dict,three_dim_dicom_file)
 
         # print('-----print outcome thread----')
         
