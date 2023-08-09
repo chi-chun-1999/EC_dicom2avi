@@ -12,7 +12,7 @@ import contextlib
 
 class MplCanvas(FigureCanvasQTAgg):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, width=16, height=9, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
@@ -24,11 +24,12 @@ class MplCanvas(FigureCanvasQTAgg):
     
     def show_whole_frame(self,whole_frame,current_frame):
         self.axes.cla()
+        self.axes.axis('off')
         self.axes.imshow(whole_frame[current_frame,:,:,:])
         self.draw()
 
-def ShowExtractOutcome(demc_info):
-    a =1
+# def ShowExtractOutcome(demc_info):
+#     a =1
     
     
 from dataclasses import dataclass, field

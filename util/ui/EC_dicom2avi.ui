@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>840</width>
-    <height>849</height>
+    <width>838</width>
+    <height>850</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,330 +21,507 @@
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="2,5">
+   <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0">
     <item>
-     <widget class="QWidget" name="widget" native="true">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout" stretch="1,2,22,0">
-         <property name="spacing">
-          <number>6</number>
-         </property>
-         <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Import File</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTreeView" name="treeView_file"/>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,1,1">
-           <item>
-            <spacer name="horizontalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_add_file">
-             <property name="text">
-              <string>+</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_delete_file">
-             <property name="text">
-              <string>-</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>DECM</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="2,5">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout" stretch="0,2,22,0">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Import File</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="treeView_file"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,1,1">
+            <item>
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_add_file">
+              <property name="text">
+               <string>+</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_delete_file">
+              <property name="text">
+               <string>-</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,2,2,0,2,20">
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <property name="spacing">
+             <number>6</number>
+            </property>
+            <property name="sizeConstraint">
+             <enum>QLayout::SetDefaultConstraint</enum>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_export_path">
+              <property name="text">
+               <string>Export Path:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_export_path">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_export">
+              <property name="text">
+               <string>select</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1,1,1,1,1,2">
+            <item>
+             <widget class="QLabel" name="label_export_file_type">
+              <property name="text">
+               <string>Export file type:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton_all">
+              <property name="acceptDrops">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>avi + npy</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton_avi">
+              <property name="text">
+               <string>avi</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton_npy">
+              <property name="text">
+               <string>npy</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_start">
+              <property name="text">
+               <string>Start</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Progress:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QProgressBar" name="progressBar">
+              <property name="value">
+               <number>24</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_progress">
+              <property name="text">
+               <string>0%</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Outcome</string>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="3,5,1">
+                 <item>
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>Extract Time:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_process_time">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_4">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="3,5,1">
+                 <item>
+                  <widget class="QLabel" name="label_3">
+                   <property name="text">
+                    <string>Extract File Num:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_process_file_num">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_5">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>Extract File Info:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QTreeView" name="treeView_outcome"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>npy Viewer</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="2,5">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,2,22,0">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <item>
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Npy Viewer Import File</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="treeView_file_npy"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="2,1,1">
+            <item>
+             <spacer name="horizontalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_add_file_npy">
+              <property name="text">
+               <string>+</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_delete_file_npy">
+              <property name="text">
+               <string>-</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="2,4,2">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_11">
+            <property name="spacing">
+             <number>6</number>
+            </property>
+            <property name="sizeConstraint">
+             <enum>QLayout::SetDefaultConstraint</enum>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_npy_file_path_npy">
+              <property name="text">
+               <string>npy file path</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_npy_file_path_npy">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QWidget" name="widget_npy" native="true"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="3,1,1,1,1,3">
+            <item>
+             <spacer name="horizontalSpacer_7">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_previous_npy">
+              <property name="text">
+               <string>&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_current_npy">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_all_npy">
+              <property name="text">
+               <string>/ 98</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_next_npy">
+              <property name="text">
+               <string>&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_8">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,2,2,0,2,20">
-      <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <property name="spacing">
-         <number>6</number>
-        </property>
-        <property name="sizeConstraint">
-         <enum>QLayout::SetDefaultConstraint</enum>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="label_export_path">
-          <property name="text">
-           <string>Export Path:</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="lineEdit_export_path">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButton_export">
-          <property name="text">
-           <string>select</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1,1,1,1,1,2">
-        <item>
-         <widget class="QLabel" name="label_export_file_type">
-          <property name="text">
-           <string>Export file type:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="radioButton_all">
-          <property name="acceptDrops">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>avi + npy</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="radioButton_avi">
-          <property name="text">
-           <string>avi</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="radioButton_npy">
-          <property name="text">
-           <string>npy</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButton_start">
-          <property name="text">
-           <string>Start</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_7">
-        <item>
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Progress:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QProgressBar" name="progressBar">
-          <property name="value">
-           <number>24</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_progress">
-          <property name="text">
-           <string>0%</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="title">
-         <string>Outcome</string>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="3,5,1">
-             <item>
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Extract Time:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit_process_time">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_4">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="3,5,1">
-             <item>
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Extract File Num:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit_process_file_num">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_5">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Extract File Info:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QTreeView" name="treeView_outcome"/>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
     </item>
    </layout>
   </widget>
@@ -354,8 +531,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>840</width>
-     <height>21</height>
+     <width>838</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufile_file">

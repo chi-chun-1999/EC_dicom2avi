@@ -189,11 +189,14 @@ class PreOrderIter(AbstractIter):
                     yield descendant_
 
 class FileTree(object):
-    def __init__(self,root=None):
+    def __init__(self,root=None,file_type = 'EC'):
         if root == None:
             self.root = Node('root')
         else:
             self.root = root
+            
+        
+        self._file_type = file_type
     
     def insertFile(self,file_path,show=False):
         # if not os.path.isfile(file_path):
@@ -212,8 +215,14 @@ class FileTree(object):
                 
                 if i ==len(path_list)-1:
                     current_path += path_list[i]
-                    dcm = pydicom.dcmread(file_path)
-                    node_data = ECData(file_path,path_list[i])
+                    
+                    if self._file_type =='EC':
+                        dcm = pydicom.dcmread(file_path)
+                        node_data = ECData(file_path,path_list[i])
+                    
+                    elif self._file_type == 'npy':
+                        node_data = file_path
+                        
                     # node_data = ECData(file_path,path_list[i],'test')
                 
                 else:
