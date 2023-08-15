@@ -17,7 +17,7 @@ import pydicom
 import pandas as pd
 import gc
 import re
-from src.ec_ui.export_ui import OutcomeTreeExportData
+from src.ec_ui.export_ui import OutcomeTreeExportData,DoctorAndResearchOutcomeTreeExportData
 import numpy as np
 
 
@@ -139,6 +139,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
     @pyqtSlot(bool)
     def on_actionOpen_file_open_triggered(self,checked):
         dir_path = QFileDialog.getExistingDirectory()
+        self._import_path = dir_path
         self._import_file_thread.getDirPath(dir_path)
         # Using multi-thread to import file
         self._import_file_thread.start()
@@ -160,13 +161,14 @@ class EC_MainWindow(QtWidgets.QMainWindow):
 
     def on_pushButton_add_file_released(self):
         dir_path = QFileDialog.getExistingDirectory()
+        self._import_path = dir_path
         self._import_file_thread.getDirPath(dir_path)
         # Using multi-thread to import file
         self._import_file_thread.start() 
 
         # Show the waiting Dialog
         self._progress_dialog = QProgressDialog(self)
-        self._progress_dialog.setLabelText('Please Wait. Loading files... ')
+        self._progress_dialog.setLabelText('Please Wait. Loading files... ') 
         self._progress_dialog.setMinimumDuration(0)
         self._progress_dialog.setRange(0,0)
         self._progress_dialog.setCancelButton(None)
@@ -262,7 +264,8 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         # demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
         
-        self._export_data_method = OutcomeTreeExportData(self._export_path) 
+        # self._export_data_method = OutcomeTreeExportData(self._export_path) 
+        self._export_data_method = DoctorAndResearchOutcomeTreeExportData(self._export_path,self._import_path) 
         self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._export_data_method,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
         
         # for test below funciton will not export extract data

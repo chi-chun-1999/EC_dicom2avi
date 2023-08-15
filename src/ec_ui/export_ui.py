@@ -195,7 +195,7 @@ class OutcomeTree(object):
     def patient_search_nodes(self):
         return self._process_patient_info.children
 
-def outcome_tree_to_dict(outcome_tree:OutcomeTree):
+def outcome_tree_to_dict(outcome_tree:OutcomeTree,research_export=False):
     extract_info = {}
     extract_info['process_time']=outcome_tree.process_time
     extract_info['process_file_num']=outcome_tree.process_file_num
@@ -206,7 +206,12 @@ def outcome_tree_to_dict(outcome_tree:OutcomeTree):
         research_id = patient.children[1].children[0].data
 
         per_process_patient_info = {}
-        per_process_patient_info[patient.children[0].data]=patient_id
+        
+        if research_id==True:
+            per_process_patient_info[patient.children[0].data]='---'
+        else:
+            per_process_patient_info[patient.children[0].data]=patient_id
+
         per_process_patient_info[patient.children[1].data]=research_id
         per_process_patient_info['process_date_info']=[]
         for date in patient.children[2:]:
@@ -379,7 +384,7 @@ class OutcomeTreeExportData(ExportDataAbs):
     
     def ECDataGetExportPath(self, ec_data:ECData,file_name_extension,idx):
         """
-        file_name_extension: 'avi' or 'npy
+        file_name_extension: 'avi' or 'npy'
         idx: means to export which cycle from origin dicom file, when idx=-1 means to export whole file
         
         """
@@ -435,5 +440,134 @@ class OutcomeTreeExportData(ExportDataAbs):
     
     
 
+class DoctorAndResearchOutcomeTreeExportData(OutcomeTreeExportData):
+    def __init__(self, export_root_path, import_root_path) -> None:
+        super().__init__(export_root_path)
+        self._import_root_path = import_root_path
+        self._outcome_tree = OutcomeTree()
+        process_time = time.ctime()
+
+        self._outcome_tree.setProcessInfo(0,process_time)
+    
+    def _to_dict(self,research_export=False):
+        demc_info = {}
+
+        demc_info['process_time']=self._outcome_tree.process_time
+        demc_info['process_patient_info'] = []
+        
+        for patient in self._outcome_tree.patient_search_nodes:
+
+            if research_export:
+                patient_id = '---'
+            else:
+                patient_id = patient.children[0].children[0].data
+
+            research_id = patient.children[1].children[0].data
+
+            per_process_patient_info = {}
+            per_process_patient_info[patient.children[0].data]=patient_id
+            per_process_patient_info[patient.children[1].data]=research_id
+            per_process_patient_info['process_date_info']=[]
+            for date in patient.children[2:]:
+                per_process_date_info = {}
+                date_info = date.children[0].children[0].data
+                per_process_date_info[date.children[0].data]=date_info
+                per_process_date_info['process_file_info'] = []
+
+                for file in date.children[1:]:
+                    file_name = file.children[0].children[0].data
+                    R_wave_location = file.children[1].children[0].data
+                    extract_frame_node = file.children[2].children[0].data
+                    unregular_rr_interval = file.children[3].children[0].data
+
+                    per_process_file_info = {}
+                    per_process_file_info[file.children[0].data] = file_name
+                    per_process_file_info[file.children[1].data] = R_wave_location
+                    per_process_file_info[file.children[2].data] = extract_frame_node
+                    per_process_file_info[file.children[3].data] = unregular_rr_interval
+                    per_process_date_info['process_file_info'].append(per_process_file_info)
+                    self._outcome_tree.process_file_num += 1
+
+
+
+                per_process_patient_info['process_date_info'].append(per_process_date_info)
+                    
+            demc_info['process_patient_info'].append(per_process_patient_info)
+        demc_info['process_file_num']=self._outcome_tree.process_file_num
+                
+        return demc_info
+    
+    def _to_data_frame(self,research_export=False):
+        f = lambda node: node.depth==4
+        stop = lambda node: node.name=="patient_id" or node.name=="research_id" or node.name == "date"
+        file_nodes = [i for i in PreOrderIter(self._outcome_tree._root,filter_=f,stop=stop)]
+
+        patient_files = {'patient_id':[],'research_id':[],'date_info':[],'file_name':[],'r_wave_location':[],'extract_frame':[],'unregular_rr_interval':[]}
+
+        for fn in file_nodes:
+
+            patient_info_node = fn.parent.parent
+
+            if research_export:
+                patient_id = '---'
+            else:
+                patient_id = patient_info_node.children[0].children[0].data
+
+            research_id = patient_info_node.children[1].children[0].data
+            date_info = patient_info_node.children[2].children[0].children[0].data
+
+
+            file_name = fn.children[0].children[0].data
+            r_wave_location = fn.children[1].children[0].data
+            extract_frame = fn.children[2].children[0].data
+            unregular_rr_interval = fn.children[3].children[0].data
+            
+# process_file = {'patient_id': '0458924','research_id': 'r12d43d','date_info':'2012-12-18','file_name':'HE4K489Y','R_wave_location': [(98, 52), (175, 52), (259, 52)],'extract_frame': [22, 47, 75],'unregular_rr_interval': False,'export_path':'/home/hello/a'}
+            # print(patient_id,research_id,date_info,file_name,r_wave_location,extract_frame,unregular_rr_interval)
+            patient_files['patient_id'].append(patient_id)
+            patient_files['research_id'].append(research_id)
+            patient_files['file_name'].append(file_name)
+            patient_files['date_info'].append(date_info)
+            patient_files['r_wave_location'].append(r_wave_location)
+            patient_files['extract_frame'].append(extract_frame)
+            patient_files['unregular_rr_interval'].append(unregular_rr_interval)
+            # patient_file = {'patient_id':patient_id,'research_id':research_id,'date_info':date_info,'file_name':file_name,'r_wave_location':r_wave_location,'extract_frame':extract_frame,'unregular_rr_interval':unregular_rr_interval}
+
+        df = pd.DataFrame(patient_files)
+        return df
+
+    def exportDecmInfo(self):
+        # for research export
+        demc_info_dict = self._to_dict(research_export=True)
+        demc_info_df = self._to_data_frame(research_export=True)
+
+        if self._export_root_path[-1]!='/':
+            self._export_root_path+='/'
+        
+        demc_info_file_path =  self._export_root_path+'demc_info.json'
+        with open(demc_info_file_path, 'w') as f:
+          f.write(json.dumps(demc_info_dict, indent = 4,cls=NumpyEncoder))
+        
+        demc_info_df_file_path =  self._export_root_path+'demc_info.xlsx'
+        demc_info_df.to_excel(demc_info_df_file_path)
+
+        # for doctor export
+        demc_info_dict = self._to_dict()
+        demc_info_df = self._to_data_frame()
+
+        if self._export_root_path[-1]!='/':
+            self._export_root_path+='/'
+        
+        demc_info_file_path =  self._import_root_path+'demc_info.json'
+        with open(demc_info_file_path, 'w') as f:
+          f.write(json.dumps(demc_info_dict, indent = 4,cls=NumpyEncoder))
+        
+        demc_info_df_file_path =  self._import_root_path+'demc_info.xlsx'
+        demc_info_df.to_excel(demc_info_df_file_path)
+          
+        return demc_info_dict
+
+    
+    
 
 

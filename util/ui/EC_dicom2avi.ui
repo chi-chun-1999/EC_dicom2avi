@@ -29,7 +29,7 @@
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>DECM</string>
+        <string>DEMC</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="2,5">
         <item>
@@ -488,7 +488,7 @@
             <item>
              <widget class="QLabel" name="label_all_npy">
               <property name="text">
-               <string>/ 98</string>
+               <string>/ --</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
