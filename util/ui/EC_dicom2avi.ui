@@ -21,7 +21,7 @@
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0">
+   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
@@ -29,7 +29,7 @@
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>DEMC</string>
+        <string>DECM</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="2,5">
         <item>
@@ -488,7 +488,7 @@
             <item>
              <widget class="QLabel" name="label_all_npy">
               <property name="text">
-               <string>/ --</string>
+               <string>/ 98</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -521,6 +521,16 @@
         </item>
        </layout>
       </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string>v2.0.1</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
      </widget>
     </item>
    </layout>
