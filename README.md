@@ -1,5 +1,5 @@
 # EC_dicom2aviUiTool 使用手冊
- 我已經將程式上傳至我個人的 Github ，也將程式的安裝檔發佈到 Github 上的 release ，目前最新的版本是 v2.0.0。
+ 我已經將程式上傳至我個人的 Github ，也將程式的安裝檔發佈到 Github 上的 release ，目前最新的版本是 v2.0.1。
 
 
 ## Installation
@@ -35,6 +35,7 @@
 
 
 ## v2.0.0 
+目前的最新版為 v2.0.1，不過最新版本的功能大致與 v2.0.0 相同，只有修改部分的 bug。
 
 在 v2.0.0 的版本中，加入的 npy Viewer 的功能，讓使用者可以查看匯出的 npy 檔，以下文檔為 v2.0.0 使用手冊：
 
@@ -53,7 +54,8 @@
 
 如果要執行切出超音波心動圖中多個 cycle 的任務，需 __點選 "DECM" 的分頁__（下圖中箭頭所指的方向）。
 
-![Pasted image 20230813173844.png](.assert/Pasted%20image%2020230813173844.png)
+<!-- ![Pasted image 20230813173844.png](.assert/Pasted%20image%2020230813173844.png) -->
+![Alt text](.assert/image.png)
 
 以下說明在 __DECM 這個分頁__ 中各個部件的功能：
 

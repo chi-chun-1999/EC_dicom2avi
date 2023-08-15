@@ -324,7 +324,7 @@ class Ui_MainWindow(object):
         self.pushButton_delete_file_npy.setText(_translate("MainWindow", "-"))
         self.label_npy_file_path_npy.setText(_translate("MainWindow", "npy file path"))
         self.pushButton_previous_npy.setText(_translate("MainWindow", "<"))
-        self.label_all_npy.setText(_translate("MainWindow", "/ 98"))
+        self.label_all_npy.setText(_translate("MainWindow", "/ --"))
         self.pushButton_next_npy.setText(_translate("MainWindow", ">"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "npy Viewer"))
         self.label_7.setText(_translate("MainWindow", "v2.0.1"))
