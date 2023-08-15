@@ -138,19 +138,42 @@ class EC_MainWindow(QtWidgets.QMainWindow):
 
     @pyqtSlot(bool)
     def on_actionOpen_file_open_triggered(self,checked):
-        dir_path = QFileDialog.getExistingDirectory()
-        self._import_path = dir_path
-        self._import_file_thread.getDirPath(dir_path)
-        # Using multi-thread to import file
-        self._import_file_thread.start()
         
-        # Show the waiting Dialog
-        self._progress_dialog = QProgressDialog(self)
-        self._progress_dialog.setLabelText('Please Wait. Loading files... ')
-        self._progress_dialog.setMinimumDuration(0)
-        self._progress_dialog.setRange(0,0)
-        self._progress_dialog.setCancelButton(None)
-        self._progress_dialog.show()
+        if self.__ui.tabWidget.currentIndex()==0:
+            dir_path = QFileDialog.getExistingDirectory()
+            self._import_path = dir_path
+            self._import_file_thread.getDirPath(dir_path)
+            # Using multi-thread to import file
+            self._import_file_thread.start()
+            
+            # Show the waiting Dialog
+            self._progress_dialog = QProgressDialog(self)
+            self._progress_dialog.setLabelText('Please Wait. Loading files... ')
+            self._progress_dialog.setMinimumDuration(0)
+            self._progress_dialog.setRange(0,0)
+            self._progress_dialog.setCancelButton(None)
+            self._progress_dialog.show()
+
+        if self.__ui.tabWidget.currentIndex()==1:
+            
+            dir_path = QFileDialog.getExistingDirectory()
+            self._import_npy_file_thread.getDirPath(dir_path)
+            
+            self._import_npy_file_thread.start()
+
+            # Show the waiting Dialog
+            self._progress_dialog = QProgressDialog(self)
+            self._progress_dialog.setLabelText('Please Wait. Loading files... ')
+            self._progress_dialog.setMinimumDuration(0)
+            self._progress_dialog.setRange(0,0)
+            self._progress_dialog.setCancelButton(None)
+            self._progress_dialog.show()
+            self.__ui.lineEdit_current_npy.setEnabled(False)
+    
+    # @pyqtSlot(int)
+    # def on_tabWidget_currentChanged(self,index):
+    #     print(index)
+        
 
         
         
