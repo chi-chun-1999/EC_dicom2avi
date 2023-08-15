@@ -19,6 +19,7 @@ import gc
 import re
 from src.ec_ui.export_ui import OutcomeTreeExportData,DoctorAndResearchOutcomeTreeExportData
 import numpy as np
+from src.exception.file_exception import FileOpenError
 
 
 
@@ -287,21 +288,28 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         # demc_info,three_dim_dicom_file = StartExtractData(self._files_dict,self._export_path,export_data_dict[self.button_group.checkedId()])
         
         
+        try:
         # self._export_data_method = OutcomeTreeExportData(self._export_path) 
-        self._export_data_method = DoctorAndResearchOutcomeTreeExportData(self._export_path,self._import_path) 
-        self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._export_data_method,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
+            self._export_data_method = DoctorAndResearchOutcomeTreeExportData(self._export_path,self._import_path) 
+            self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._export_data_method,export_data_dict[self.button_group.checkedId()],thread_num=self._config_dict['thread_num'],ocr_weight_path=self._config_dict['ocr_weight_path'])
         
-        # for test below funciton will not export extract data
-        # self._epxort_data_method = OutcomeTreeExportData(self._export_path) 
-        # self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._epxort_data_method,export_data_dict[4],thread_num=3)
-        self._data_extractor.signal_progress.connect(self.do_getProgress)
+            # for test below funciton will not export extract data
+            # self._epxort_data_method = OutcomeTreeExportData(self._export_path) 
+            # self._data_extractor = MultiThreadExtractData(self._process_data_dict,self._epxort_data_method,export_data_dict[4],thread_num=3)
+            self._data_extractor.signal_progress.connect(self.do_getProgress)
 
-        self._data_extractor.startExtractData()
-        
-        self._outcome_thread = QThread()
-        self._outcome_thread.run = self.getExtractOutcome
-        self._outcome_thread.start()
-        self.__ui.pushButton_start.setEnabled(False)
+            self._data_extractor.startExtractData()
+            
+            self._outcome_thread = QThread()
+            self._outcome_thread.run = self.getExtractOutcome
+            self._outcome_thread.start()
+            self.__ui.pushButton_start.setEnabled(False)
+        except FileOpenError as e:
+            warning_str = str(e)
+            message = QMessageBox.critical(self,"Error",warning_str,buttons=QMessageBox.StandardButton.Ok)
+        except:
+            warning_str = str(e)
+            message = QMessageBox.critical(self,"Error",warning_str,buttons=QMessageBox.StandardButton.Ok)
         
     
     def getExtractOutcome(self):

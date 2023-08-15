@@ -14,6 +14,7 @@ import json
 import abc
 import time
 import pandas as pd
+from src.exception.file_exception import FileOpenError
 
 class NumpyEncoder(json.JSONEncoder):
     """ Custom encoder for numpy data types """
@@ -279,6 +280,13 @@ class ExportDataAbs(abc.ABC):
         demc_info_df.to_excel(demc_info_df_file_path)
           
         return demc_info_dict
+    
+    def checkFileOpen(self,file_path):
+        if os.path.exists(file_path):
+            try:
+                os.rename(file_path,file_path)
+            except:
+                raise FileOpenError(file_path)
 
 
 class OutcomeTreeExportData(ExportDataAbs):
@@ -448,6 +456,24 @@ class DoctorAndResearchOutcomeTreeExportData(OutcomeTreeExportData):
         process_time = time.ctime()
 
         self._outcome_tree.setProcessInfo(0,process_time)
+
+        if self._export_root_path[-1]!='/':
+            self._export_root_path+='/'
+
+        if self._import_root_path[-1]!='/':
+            self._import_root_path+='/'
+        
+        demc_info_file_path =  self._export_root_path+'demc_info.json'
+        demc_info_df_file_path =  self._export_root_path+'demc_info.xlsx'
+        
+        self.checkFileOpen(demc_info_file_path)
+        self.checkFileOpen(demc_info_df_file_path)
+
+        demc_info_file_path =  self._import_root_path+'demc_info.json'
+        demc_info_df_file_path =  self._import_root_path+'demc_info.xlsx'
+        
+        self.checkFileOpen(demc_info_file_path)
+        self.checkFileOpen(demc_info_df_file_path)
     
     def _to_dict(self,research_export=False):
         demc_info = {}
@@ -543,6 +569,9 @@ class DoctorAndResearchOutcomeTreeExportData(OutcomeTreeExportData):
 
         if self._export_root_path[-1]!='/':
             self._export_root_path+='/'
+
+        if self._import_root_path[-1]!='/':
+            self._import_root_path+='/'
         
         demc_info_file_path =  self._export_root_path+'demc_info.json'
         with open(demc_info_file_path, 'w') as f:
