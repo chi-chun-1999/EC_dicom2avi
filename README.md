@@ -110,8 +110,10 @@ Echo Strain/
 如果要使用 npy Viewer 的功能必須點選 __"npy Viewer"__ 的分頁，即可看到以下的畫面。
 
 ![Pasted image 20230813204636.png](.assert/Pasted%20image%2020230813204636.png)
+
+以下說明在 __npy Viewer 這個分頁__ 中各個部件的功能：
 - <font style="background: red">部件 11</font>：選擇要要匯入具有 npy 檔的資料夾。
-	- 在選取 資料夾 時需注意 __必須選取__ 具有以下的資料結構的資料夾，像是 __Echo Strain__，否則無法將資料夾下的 npy 檔匯入到程式中。
+	- 在選取 資料夾 時需注意 __必須選取__ 具有以下的資料結構的資料夾，像是 __ExportData__，否則無法將資料夾下的 npy 檔匯入到程式中。
 ```
 ExportData/
 └── ac7b1825f4/
