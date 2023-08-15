@@ -29,7 +29,7 @@
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>DECM</string>
+        <string>DEMC</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="2,5">
         <item>
