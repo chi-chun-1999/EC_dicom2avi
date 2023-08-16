@@ -4,11 +4,13 @@
 
 ## Installation
 
+
+
 以下安裝教學為 v1.1.3 的教學，不過也同樣適用目前的最新版本。
 
-[Releases · chi-chun-1999/EC_dicom2avi (github.com)](https://github.com/chi-chun-1999/EC_dicom2avi)
+[不同版本的下載網址](https://github.com/chi-chun-1999/EC_dicom2avi)
 
-
+[安裝影片的連結](https://youtu.be/CPQJszbbBpg)
 
 - 點擊紅色區域下載最新版
 ![Pasted image 20230731224642.png](.assert/Pasted%20image%2020230731224642.png)
@@ -51,6 +53,7 @@
 
 ### 執行切出超音波心動圖中多個 cycle 的任務
 
+[執行切出超音波心動圖中多個 cycle 的任務的影片連結](https://youtu.be/EpCUSnPGIw8)
 
 如果要執行切出超音波心動圖中多個 cycle 的任務，需 __點選 "DECM" 的分頁__（下圖中箭頭所指的方向）。
 
@@ -106,6 +109,7 @@ Echo Strain/
 ![Pasted image 20230813203944.png](.assert/Pasted%20image%2020230813203944.png)
 
 ### npy Viewer
+[Npy Viewer 使用的影片連結](https://youtu.be/GD00wAyVjk4)
 
 為了能夠讓使用者查看方便查看輸出的 npy 檔，在 v2.0.0 這個版本中加入了這個功能。然而這支程式主要是用來查看 __四維的影像資料__，否則會產生錯誤。
 
