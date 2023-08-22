@@ -19,7 +19,7 @@ class ConfigWindow(QtWidgets.QWidget):
         self._config_dict['ocr_weight_path'] = ocr_weight_path
         
         
-        thread_min = 3
+        thread_min = 1
         thread_max = 15
         self.__ui.spinBox_thread_num.setValue(thread_num)
         self.__ui.spinBox_thread_num.setRange(thread_min,thread_max)

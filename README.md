@@ -2,6 +2,16 @@
  我已經將程式上傳至我個人的 Github ，也將程式的安裝檔發佈到 Github 上的 release ，目前最新的版本是 v2.0.1。
 
 
+- [EC\_dicom2aviUiTool 使用手冊](#ec_dicom2aviuitool-使用手冊)
+  - [Installation](#installation)
+  - [Uninstallation](#uninstallation)
+  - [v2.0.0](#v200)
+    - [開啟程式](#開啟程式)
+    - [執行切出超音波心動圖中多個 cycle 的任務](#執行切出超音波心動圖中多個-cycle-的任務)
+      - [例外處理](#例外處理)
+    - [npy Viewer](#npy-viewer)
+      - [例外處理](#例外處理-1)
+
 ## Installation
 
 
@@ -34,7 +44,11 @@
 ![Pasted image 20230801111427.png](.assert/Pasted%20image%2020230801111427.png)
 ![Pasted image 20230731230208.png](.assert/Pasted%20image%2020230731230208.png)
 
+## Uninstallation
 
+如果要安裝新的版本，僅需要將在桌面上的這兩支檔案刪除即可。
+
+![Alt text](./.assert/image2.png)
 
 ## v2.0.0 
 目前的最新版為 v2.0.1，不過最新版本的功能大致與 v2.0.0 相同，只有修改部分的 bug。

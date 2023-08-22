@@ -33,7 +33,7 @@ class EC_MainWindow(QtWidgets.QMainWindow):
         self._process_data_dict = {}
         self._export_path = None
 
-        self._thread_num = 3
+        self._thread_num = 1
         self._ocr_weight_path = './config/template_number.npy'
         self._config_window = ConfigWindow(self._thread_num,self._ocr_weight_path)
         self._config_window._config_signal.connect(self.do_getConfig)
