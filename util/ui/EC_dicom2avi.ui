@@ -526,7 +526,7 @@
     <item>
      <widget class="QLabel" name="label_7">
       <property name="text">
-       <string>v2.0.1</string>
+       <string>v2.0.2</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -542,7 +542,7 @@
      <x>0</x>
      <y>0</y>
      <width>838</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menufile_file">
