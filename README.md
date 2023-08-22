@@ -1,5 +1,5 @@
 # EC_dicom2aviUiTool 使用手冊
- 我已經將程式上傳至我個人的 Github ，也將程式的安裝檔發佈到 Github 上的 release ，目前最新的版本是 v2.0.1。
+ 我已經將程式上傳至我個人的 Github ，也將程式的安裝檔發佈到 Github 上的 release ，目前最新的版本是 v2.0.2。
 
 
 - [EC\_dicom2aviUiTool 使用手冊](#ec_dicom2aviuitool-使用手冊)
@@ -51,7 +51,7 @@
 ![Alt text](./.assert/image2.png)
 
 ## v2.0.0 
-目前的最新版為 v2.0.1，不過最新版本的功能大致與 v2.0.0 相同，只有修改部分的 bug。
+目前的最新版為 v2.0.2，不過最新版本的功能大致與 v2.0.0 相同，只有修改部分的 bug。
 
 在 v2.0.0 的版本中，加入的 npy Viewer 的功能，讓使用者可以查看匯出的 npy 檔，以下文檔為 v2.0.0 使用手冊：
 
